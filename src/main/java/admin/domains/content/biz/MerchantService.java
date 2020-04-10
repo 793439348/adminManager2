@@ -23,7 +23,7 @@ public interface MerchantService {
 
     boolean add(Merchant merchant);
 
-    PageList search(String name, String code, Integer status, Integer page, Integer pageSize);
+    PageList search(String name, String code, Integer status, Integer start, Integer limit);
 
     boolean updateMerchant(Merchant merchant);
 

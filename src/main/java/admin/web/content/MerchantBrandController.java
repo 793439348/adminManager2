@@ -45,8 +45,8 @@ public class MerchantBrandController extends AbstractActionController {
         final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
         final AdminUser uEntity = super.getCurrUser(session, request, response);
         final long t1 = System.currentTimeMillis();
-//        if (uEntity != null) {
-//            if (super.hasAccess(uEntity, actionKey)) {
+        if (uEntity != null) {
+            if (super.hasAccess(uEntity, actionKey)) {
                 List<MerchantBrandVO> list = merchantBrandService.listAll();
 
                 if (list.size() != 0) {
@@ -57,10 +57,10 @@ public class MerchantBrandController extends AbstractActionController {
                     json.accumulate("data", "[]");
                 }
                 json.set(0, "0-3");
-//            } else
-//                json.set(2, "2-4");
-//        } else
-//            json.set(2, "2-6");
+            } else
+                json.set(2, "2-4");
+        } else
+            json.set(2, "2-6");
 
         final long t2 = System.currentTimeMillis();
         if (uEntity != null) {
@@ -160,15 +160,15 @@ public class MerchantBrandController extends AbstractActionController {
     public void MERCHANT_BRAND_GET(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 
         final String actionKey = "/merchant-brand/get";
-        final long t1 = System.currentTimeMillis();
+//        final long t1 = System.currentTimeMillis();
         final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
-        final AdminUser uEntity = super.getCurrUser(session, request, response);
+//        final AdminUser uEntity = super.getCurrUser(session, request, response);
 //        if (uEntity != null) {
 //            if (super.hasAccess(uEntity, actionKey)) {
+
         Integer id = HttpUtil.getIntParameter(request, "id");
         MerchantBrandVO bean = merchantBrandService.getBean(id);
         json.accumulate("bean", bean);
-
         json.set(0, "0-3");
 //            }
 //            else {

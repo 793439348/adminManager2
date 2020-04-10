@@ -8,7 +8,7 @@
 <!-- BEGIN HEAD -->
 <head>
     <meta charset="utf-8"/>
-    <title>测试页面</title>
+    <title>商户管理</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
@@ -386,7 +386,7 @@
         Metronic.init(); // init metronic core components
         Layout.init(); // init current layout
         // init data
-        test.init();
+        list.init();
     });
 </script>
 <!-- END JAVASCRIPTS -->

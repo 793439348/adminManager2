@@ -51,10 +51,10 @@ public class MerchantBrandDomainController extends AbstractActionController {
             if (super.hasAccess(uEntity, actionKey)) {
                 Integer brand = HttpUtil.getIntParameter(request,"brand");
                 String domain = request.getParameter("domain");
-                Integer page = HttpUtil.getIntParameter(request,"page");
-                Integer pageSize = HttpUtil.getIntParameter(request,"pageSize");
+                Integer start = HttpUtil.getIntParameter(request,"start");
+                Integer limit = HttpUtil.getIntParameter(request,"limit");
 
-                PageList pList = domainService.search(brand, domain, page, pageSize);
+                PageList pList = domainService.search(brand, domain, start, limit);
                 if (pList != null) {
                     json.accumulate("totalCount", pList.getCount());
                     json.accumulate("data", pList.getList());
@@ -151,18 +151,16 @@ public class MerchantBrandDomainController extends AbstractActionController {
     @ResponseBody
     @RequestMapping(value = "/merchant-brand-domain/get", method = RequestMethod.POST)
     public void MERCHANT_BRAND_DOMAIN_GET(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
-
-
-        final String actionKey = "/merchant-brand-domain/get";
-        final long t1 = System.currentTimeMillis();
+//        final String actionKey = "/merchant-brand-domain/get";
+//        final long t1 = System.currentTimeMillis();
         final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
-        final AdminUser uEntity = super.getCurrUser(session, request, response);
+//        final AdminUser uEntity = super.getCurrUser(session, request, response);
 //        if (uEntity != null) {
 //            if (super.hasAccess(uEntity, actionKey)) {
+
         Integer id = HttpUtil.getIntParameter(request, "id");
         MerchantDomainVO domain = domainService.getBean(id);
         json.accumulate("bean", domain);
-
         json.set(0, "0-3");
 //            }
 //            else {

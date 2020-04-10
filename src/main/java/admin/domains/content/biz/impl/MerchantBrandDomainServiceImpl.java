@@ -54,15 +54,15 @@ public class MerchantBrandDomainServiceImpl implements MerchantBrandDomainServic
     }
 
     @Override
-    public PageList search(Integer brand, String domain, Integer page, Integer pageSize) {
-        if ( page == null || page < 0 ) {
-            page = 0;
+    public PageList search(Integer brand, String domain, Integer start, Integer limit) {
+        if ( start == null || start < 0 ) {
+            start = 0;
         }
-        if (pageSize == null || pageSize < 0 ) {
-            pageSize = 10;
+        if (limit == null || limit < 0 ) {
+            limit = 10;
         }
-        if (pageSize > 100) {
-            pageSize = 100;
+        if (limit > 100) {
+            limit = 100;
         }
 
         final List<Criterion> criterions = new ArrayList<Criterion>();
@@ -79,7 +79,7 @@ public class MerchantBrandDomainServiceImpl implements MerchantBrandDomainServic
 
         orders.add(Order.desc("id"));
 
-        PageList pageList = domainDao.find(criterions, orders, page, pageSize);
+        PageList pageList = domainDao.find(criterions, orders, start, limit);
         List<MerchantDomainVO> list = new ArrayList<>();
         for (Object o : pageList.getList()) {
             MerchantDomainVO domainVO = new MerchantDomainVO();

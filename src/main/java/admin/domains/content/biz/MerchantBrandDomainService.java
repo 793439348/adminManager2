@@ -19,7 +19,7 @@ public interface MerchantBrandDomainService {
 
     MerchantDomainVO getBean(Integer id);
 
-    PageList search(Integer brand, String domain, Integer page, Integer pageSize);
+    PageList search(Integer brand, String domain, Integer start, Integer limit);
 
     List<MerchantDomainVO> findAll();
 

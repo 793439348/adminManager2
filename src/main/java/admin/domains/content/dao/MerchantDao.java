@@ -33,7 +33,7 @@ public interface MerchantDao {
 
     Merchant getBean(Integer id);
 
-    PageList find(final List<Criterion> condition, final List<Order> sort, final int page, final int pageSize);
+    PageList find(final List<Criterion> condition, final List<Order> sort, final int start, final int limit);
 
     List<Merchant> findAll();
 }

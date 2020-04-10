@@ -44,7 +44,6 @@ public class SiteTemplateController extends AbstractActionController {
     @ResponseBody
     @RequestMapping(value = "/site-template/list", method = RequestMethod.POST)
     public void SITE_TEMPLATE_LIST(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
-
         List<SiteTemplate> all = siteTemplateService.findAll();
         HttpUtil.write(response, JSON.toJSONString(all), "text/json");
     }
@@ -175,7 +174,8 @@ public class SiteTemplateController extends AbstractActionController {
 
     @ResponseBody
     @RequestMapping(value = "/site-template/update", method = RequestMethod.POST)
-    public void SITE_TEMPLATE_UPDATE(@RequestParam(required = false) MultipartFile smallImage, MultipartFile bigImage, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+    public void SITE_TEMPLATE_UPDATE(@RequestParam(required = false) MultipartFile smallImage, MultipartFile bigImage,
+                                     HttpSession session, HttpServletRequest request, HttpServletResponse response) {
         final String actionKey = "/site-template/update";
         final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
         final AdminUser uEntity = super.getCurrUser(session, request, response);
@@ -284,16 +284,15 @@ public class SiteTemplateController extends AbstractActionController {
     @RequestMapping(value = "/site-template/get", method = RequestMethod.POST)
     public void getMerchant(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 
-        final String actionKey = "/site-template/get";
-        final long t1 = System.currentTimeMillis();
+//        final String actionKey = "/site-template/get";
+//        final long t1 = System.currentTimeMillis();
         final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
-        final AdminUser uEntity = super.getCurrUser(session, request, response);
+//        final AdminUser uEntity = super.getCurrUser(session, request, response);
 //        if (uEntity != null) {
 //            if (super.hasAccess(uEntity, actionKey)) {
         Integer id = HttpUtil.getIntParameter(request, "id");
         SiteTemplate siteTemplate = siteTemplateService.getBean(id);
         json.accumulate("bean", siteTemplate);
-
         json.set(0, "0-3");
 //            }
 //            else {
@@ -318,8 +317,8 @@ public class SiteTemplateController extends AbstractActionController {
         HttpUtil.write(response, JSON.toJSONString(siteTemplate), "text/json");
     }
     @ResponseBody
-    @RequestMapping(value = "/site-template/existCode", method = RequestMethod.POST)
-    public void existCode(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+    @RequestMapping(value = "/site-template/notexistCode", method = RequestMethod.POST)
+    public void notexistCode(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
         String code = request.getParameter("code");
         SiteTemplate siteTemplate = siteTemplateService.getBeanByCode(code);
         boolean boo = false;

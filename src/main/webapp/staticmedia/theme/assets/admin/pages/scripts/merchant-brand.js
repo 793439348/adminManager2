@@ -1,4 +1,4 @@
-var test = function() {
+var list = function() {
 
     var tables = function () {
         var tableList = $('#table-list');
@@ -11,7 +11,7 @@ var test = function() {
         // };
         var pagination = $.pagination({
             render: tablePagelist,
-            pageSize: 5,
+            pageSize: 10,
             ajaxType: 'post',
             ajaxUrl: './merchant-brand/list',
             ajaxData: /*getSearchParams*/'',
@@ -281,9 +281,11 @@ var test = function() {
             selt1.empty();
             selt2.empty();
             $.each(data, function(idx, val) {
+
                 if (val.type == 1){
                     if (val.id == tempId){
                         selt1.append('<option value="' + val.code + '" selected>' + val.code + '</option>');
+                        selt1.next().attr("src","")
                         selt1.next().attr("src",(val.smallImage+"?"+Math.random()).toString())
                     }
                     else{
@@ -294,6 +296,7 @@ var test = function() {
                 if (val.type == 2) {
                     if (val.id == mtempId){
                         selt2.append('<option value="' + val.code + '" selected>' + val.code + '</option>');
+                        selt2.next().attr("src","")
                         selt2.next().attr("src",(val.smallImage+"?"+Math.random()).toString())
                     }
                     else{
@@ -314,10 +317,14 @@ var test = function() {
             form.find('input[name="status"][value="' + data.bean.status + '"]').attr('checked', true);
 
             loadMarchant(data.bean.merchantCode);
-            loadTemplateImg(data.bean.templete.id,data.bean.mtemplete.id);
 
-
-
+            if (data.bean.templete && data.bean.mtemplete) {
+                loadTemplateImg(data.bean.templete.id,data.bean.mtemplete.id);
+            }else if (data.bean.templete) {
+                loadTemplateImg(data.bean.templete.id,0);
+            }else if (data.bean.mtemplete) {
+                loadTemplateImg(0,data.bean.mtemplete.id);
+            }else {loadTemplateImg(0,0)}
 
             Metronic.initAjax();
             form.find('.help-inline').empty();

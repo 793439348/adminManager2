@@ -54,8 +54,8 @@ public class MerchantBrandDomainDaoImpl implements MerchantBrandDomainDao {
         return superDao.list(hql);
     }
 
-    public PageList find(List<Criterion> condition, List<Order> sort, int page, int pageSize) {
+    public PageList find(List<Criterion> condition, List<Order> sort, int start, int limit) {
         final String propertyName = "id";
-        return superDao.findPageList(MerchantBrandDomain.class, propertyName, condition, sort, page, pageSize);
+        return superDao.findPageList(MerchantBrandDomain.class, propertyName, condition, sort, start, limit);
     }
 }

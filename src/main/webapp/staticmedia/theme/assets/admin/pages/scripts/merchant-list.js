@@ -1,4 +1,4 @@
-var test = function() {
+var list = function() {
 
     var tables = function () {
         var tableList = $('#table-list');
@@ -11,7 +11,7 @@ var test = function() {
         };
         var pagination = $.pagination({
             render: tablePagelist,
-            pageSize: 5,
+            pageSize: 10,
             ajaxType: 'post',
             ajaxUrl: './merchant/list',
             ajaxData: getSearchParams,
@@ -362,7 +362,7 @@ var test = function() {
                         minlength: 4,
                         maxlength: 4,
                         remote: {
-                            url: '/merchant/exists',
+                            url: '/merchant/notexists',
                             type: 'post'
                         },
                         isInegal: true
@@ -370,7 +370,7 @@ var test = function() {
                     account: {
                         required: true,
                         remote: {
-                            url: '/merchant/exists',
+                            url: '/merchant/notexists',
                             type: 'post'
                         },
                         isInegal: true

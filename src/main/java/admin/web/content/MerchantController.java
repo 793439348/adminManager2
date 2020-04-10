@@ -56,10 +56,10 @@ public class MerchantController extends AbstractActionController {
                 String name = request.getParameter("name");
                 String code = request.getParameter("code");
                 Integer status = HttpUtil.getIntParameter(request, "status");
-                Integer page = HttpUtil.getIntParameter(request, "start");
-                Integer pageSize = HttpUtil.getIntParameter(request, "limit");
+                Integer start = HttpUtil.getIntParameter(request, "start");
+                Integer limit = HttpUtil.getIntParameter(request, "limit");
 
-                PageList pList = merchantService.search(name, code, status, page, pageSize);
+                PageList pList = merchantService.search(name, code, status, start, limit);
                 if (pList != null) {
                     json.accumulate("totalCount", pList.getCount());
                     json.accumulate("data", pList.getList());
@@ -153,8 +153,6 @@ public class MerchantController extends AbstractActionController {
 
                 }
 
-
-
             } else
                 json.set(2, "2-4");
         } else
@@ -193,30 +191,30 @@ public class MerchantController extends AbstractActionController {
     @ResponseBody
     @RequestMapping(value = "/merchant/get", method = RequestMethod.POST)
     public void getMerchant(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
-
-        final String actionKey = "/merchant/get";
+        /*final String actionKey = "/merchant/get";
         final long t1 = System.currentTimeMillis();
-        final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
         final AdminUser uEntity = super.getCurrUser(session, request, response);
-//        if (uEntity != null) {
-//            if (super.hasAccess(uEntity, actionKey)) {
+        if (uEntity != null) {
+            if (super.hasAccess(uEntity, actionKey)) {*/
+                final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
+
                 Integer id = HttpUtil.getIntParameter(request, "id");
                 Merchant merchant = merchantService.getBean(id);
                 json.accumulate("bean", merchant);
 
                 json.set(0, "0-3");
-//            }
-//            else {
-//                json.set(2, "2-4");
-//            }
-//        }
-//        else {
-//            json.set(2, "2-6");
-//        }
-//        final long t2 = System.currentTimeMillis();
-//        if (uEntity != null) {
-//            this.adminUserActionLogJob.add(request, actionKey, uEntity, json, t2 - t1);
-//        }
+            /*}
+            else {
+                json.set(2, "2-4");
+            }
+        }
+        else {
+            json.set(2, "2-6");
+        }
+        final long t2 = System.currentTimeMillis();
+        if (uEntity != null) {
+            this.adminUserActionLogJob.add(request, actionKey, uEntity, json, t2 - t1);
+        }*/
         HttpUtil.write(response, json.toString(), "text/json");
     }
 
@@ -228,8 +226,8 @@ public class MerchantController extends AbstractActionController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/merchant/exists", method = RequestMethod.POST)
-    public void exists(String code, String account, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+    @RequestMapping(value = "/merchant/notexists", method = RequestMethod.POST)
+    public void notexists(String code, String account, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
         boolean boo = false;
         if (null == merchantService.exists(code, account))
             boo = true;

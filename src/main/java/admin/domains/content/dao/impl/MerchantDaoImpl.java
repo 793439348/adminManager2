@@ -78,9 +78,9 @@ public class MerchantDaoImpl implements MerchantDao {
         return (Merchant) superDao.unique(hql,values);
     }
 
-    public PageList find(List<Criterion> condition, List<Order> sort, int page, int pageSize) {
+    public PageList find(List<Criterion> condition, List<Order> sort, int start, int limit) {
         final String propertyName = "id";
-        return superDao.findPageList(Merchant.class,propertyName,condition,sort,page,pageSize);
+        return superDao.findPageList(Merchant.class,propertyName,condition,sort,start,limit);
     }
 
     @Override

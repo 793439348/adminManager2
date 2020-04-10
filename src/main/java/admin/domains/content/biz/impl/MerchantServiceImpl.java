@@ -55,15 +55,15 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
-    public PageList search(String name, String code, Integer status, Integer page, Integer pageSize) {
-        if (page < 0) {
-            page = 0;
+    public PageList search(String name, String code, Integer status, Integer start, Integer limit) {
+        if (start < 0) {
+            start = 0;
         }
-        if (pageSize < 0) {
-            pageSize = 10;
+        if (limit < 0) {
+            limit = 10;
         }
-        if (pageSize > 100) {
-            pageSize = 100;
+        if (limit > 100) {
+            limit = 100;
         }
         final List<Criterion> criterions = new ArrayList<Criterion>();
         final List<Order> orders = new ArrayList<Order>();
@@ -76,7 +76,7 @@ public class MerchantServiceImpl implements MerchantService {
             criterions.add((Criterion) Restrictions.eq("status", status));
 
         orders.add(Order.desc("id"));
-        PageList pageList = merchantDao.find(criterions, orders, page, pageSize);
+        PageList pageList = merchantDao.find(criterions, orders, start, limit);
         List<MerchantVO> list = new ArrayList<>();
         for (Object o : pageList.getList()) {
             list.add(new MerchantVO((Merchant) o));
