@@ -51,7 +51,7 @@ public class SiteTemplateController extends AbstractActionController {
 
     @ResponseBody
     @RequestMapping(value = "/site-template/add", method = RequestMethod.POST)
-    public void SITE_TEMPLATE_ADD(@RequestParam MultipartFile templateImg, MultipartFile templateImg1, HttpSession session,
+    public void SITE_TEMPLATE_ADD(@RequestParam MultipartFile smallImage, MultipartFile bigImage, HttpSession session,
                                   HttpServletRequest request, HttpServletResponse response) {
         final String actionKey = "/site-template/add";
         final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
@@ -68,8 +68,8 @@ public class SiteTemplateController extends AbstractActionController {
                     /*文件上传start*/
                     String savePath = request.getSession().getServletContext().getRealPath("staticmedia/templateImg");
                     String imgFormat = "bmp,jpg,png,tif,gif,pcx,tga,exif,fpx,svg,psd,cdr,pcd,dxf,ufo,eps,ai,raw,webp";
-                    String suf = templateImg.getOriginalFilename().substring(templateImg.getOriginalFilename().lastIndexOf(".") + 1);
-                    String suf1 = templateImg1.getOriginalFilename().substring(templateImg1.getOriginalFilename().lastIndexOf(".") + 1);
+                    String suf = smallImage.getOriginalFilename().substring(smallImage.getOriginalFilename().lastIndexOf(".") + 1);
+                    String suf1 = bigImage.getOriginalFilename().substring(bigImage.getOriginalFilename().lastIndexOf(".") + 1);
                     InputStream is = null;
                     OutputStream os = null;
                     InputStream is1 = null;
@@ -82,30 +82,30 @@ public class SiteTemplateController extends AbstractActionController {
                         // 图片格式验证
                         if (imgFormat.contains(suf.toLowerCase()) && imgFormat.contains(suf1.toLowerCase())) {
 
-                            String smallImage = code + "-smallImage." + suf;
-                            String bigImage = code + "-bigImage." + suf;
+                            String smallImageName = code + "-smallImage." + suf;
+                            String bigImageName = code + "-bigImage." + suf;
 
-                            File file = new File(savePath + "/" + smallImage );
+                            File file = new File(savePath + "/" + smallImageName );
                             if (!file.exists())
                                 file.createNewFile();
-                            File file1 = new File(savePath + "/" + bigImage);
+                            File file1 = new File(savePath + "/" + bigImageName);
                             if (!file1.exists())
                                 file1.createNewFile();
 
-                            is = templateImg.getInputStream();
+                            is = smallImage.getInputStream();
                             os = new FileOutputStream(file);
                             byte[] bytes = new byte[1024];
                             int n = 0;
                             while ((n = is.read(bytes)) != -1) {
                                 os.write(bytes);
                             }
-                            is1 = templateImg1.getInputStream();
+                            is1 = bigImage.getInputStream();
                             os1 = new FileOutputStream(file1);
                             while ((n = is1.read(bytes)) != -1) {
                                 os1.write(bytes);
                             }
 
-                            SiteTemplate siteTemplate = new SiteTemplate(code, name, type, "templateImg/"+smallImage,"templateImg/"+ bigImage);
+                            SiteTemplate siteTemplate = new SiteTemplate(code, name, type, "templateImg/"+smallImageName,"templateImg/"+ bigImageName);
 
                             if (siteTemplateService.add(siteTemplate))
                                 json.set(0,"0-6");
@@ -175,7 +175,7 @@ public class SiteTemplateController extends AbstractActionController {
 
     @ResponseBody
     @RequestMapping(value = "/site-template/update", method = RequestMethod.POST)
-    public void SITE_TEMPLATE_UPDATE(@RequestParam(required = false) MultipartFile templateImg, MultipartFile templateImg1, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+    public void SITE_TEMPLATE_UPDATE(@RequestParam(required = false) MultipartFile smallImage, MultipartFile bigImage, HttpSession session, HttpServletRequest request, HttpServletResponse response) {
         final String actionKey = "/site-template/update";
         final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
         final AdminUser uEntity = super.getCurrUser(session, request, response);
@@ -200,43 +200,43 @@ public class SiteTemplateController extends AbstractActionController {
                     OutputStream os = null;
                     InputStream is1 = null;
                     OutputStream os1 = null;
-                    String smallImage = "";
-                    String bigImage = "";
+                    String smallImageName = "";
+                    String bigImageName = "";
                     try {
                         // 是否修改图片
                         byte[] bytes = new byte[1024];
                         int n = 0;
-                        if (templateImg != null) {
-                            String suf = templateImg.getOriginalFilename().substring(templateImg.getOriginalFilename().lastIndexOf(".") + 1);
+                        if (smallImage != null) {
+                            String suf = smallImage.getOriginalFilename().substring(smallImage.getOriginalFilename().lastIndexOf(".") + 1);
                             if (imgFormat.contains(suf.toLowerCase())){
-                                smallImage = code + "-smallImage." + suf;
-                                File file = new File(savePath + "/" + smallImage );
+                                smallImageName = code + "-smallImage." + suf;
+                                File file = new File(savePath + "/" + smallImageName );
                                 if (!file.exists())
                                     file.createNewFile();
-                                is = templateImg.getInputStream();
+                                is = smallImage.getInputStream();
                                 os = new FileOutputStream(file);
                                 while ((n = is.read(bytes)) != -1) {
                                     os.write(bytes);
                                 }
-                                smallImage = "templateImg/"+smallImage;
+                                smallImageName = "templateImg/"+smallImageName;
                             }else {
                                 json.set(2,"2-9000");
                                 boo = false;
                             }
                         }
-                        if (templateImg1 != null) {
-                            String suf1 = templateImg1.getOriginalFilename().substring(templateImg1.getOriginalFilename().lastIndexOf(".") + 1);
+                        if (bigImage != null) {
+                            String suf1 = bigImage.getOriginalFilename().substring(bigImage.getOriginalFilename().lastIndexOf(".") + 1);
                             if (imgFormat.contains(suf1.toLowerCase())){
-                                bigImage = code + "-bigImage." + suf1;
+                                bigImageName = code + "-bigImage." + suf1;
                                 File file1 = new File(savePath + "/" + bigImage);
                                 if (!file1.exists())
                                     file1.createNewFile();
-                                is1 = templateImg1.getInputStream();
+                                is1 = bigImage.getInputStream();
                                 os1 = new FileOutputStream(file1);
                                 while ((n = is1.read(bytes)) != -1) {
                                     os1.write(bytes);
                                 }
-                                bigImage = "templateImg/"+bigImage;
+                                bigImageName = "templateImg/"+bigImage;
                             }else {
                                 json.set(2,"2-9000");
                                 boo = false;
@@ -259,7 +259,7 @@ public class SiteTemplateController extends AbstractActionController {
                         }
                     }
                     if (boo) {
-                        SiteTemplate siteTemplate = new SiteTemplate(code, name, type, smallImage, bigImage);
+                        SiteTemplate siteTemplate = new SiteTemplate(code, name, type, smallImageName, bigImageName);
                         siteTemplate.setId(id);
                         log.info("SITE_TEMPLATE_UPDATE :{}", siteTemplate);
 
@@ -283,9 +283,31 @@ public class SiteTemplateController extends AbstractActionController {
     @ResponseBody
     @RequestMapping(value = "/site-template/get", method = RequestMethod.POST)
     public void getMerchant(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+
+        final String actionKey = "/site-template/get";
+        final long t1 = System.currentTimeMillis();
+        final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
+        final AdminUser uEntity = super.getCurrUser(session, request, response);
+//        if (uEntity != null) {
+//            if (super.hasAccess(uEntity, actionKey)) {
         Integer id = HttpUtil.getIntParameter(request, "id");
         SiteTemplate siteTemplate = siteTemplateService.getBean(id);
-        HttpUtil.write(response, JSON.toJSONString(siteTemplate), "text/json");
+        json.accumulate("bean", siteTemplate);
+
+        json.set(0, "0-3");
+//            }
+//            else {
+//                json.set(2, "2-4");
+//            }
+//        }
+//        else {
+//            json.set(2, "2-6");
+//        }
+//        final long t2 = System.currentTimeMillis();
+//        if (uEntity != null) {
+//            this.adminUserActionLogJob.add(request, actionKey, uEntity, json, t2 - t1);
+//        }
+        HttpUtil.write(response, json.toString(), "text/json");
     }
 
     @ResponseBody
@@ -317,8 +339,8 @@ public class SiteTemplateController extends AbstractActionController {
             if (super.hasAccess(uEntity, actionKey)){
                 String name = request.getParameter("name");
                 Integer type = HttpUtil.getIntParameter(request, "type");
-                Integer page = HttpUtil.getIntParameter(request, "page");
-                Integer pageSize = HttpUtil.getIntParameter(request, "pageSize");
+                Integer page = HttpUtil.getIntParameter(request, "start");
+                Integer pageSize = HttpUtil.getIntParameter(request, "limit");
                 PageList pList = siteTemplateService.search(type, name, page, pageSize);
                 if (pList != null) {
                     json.accumulate("totalCount", pList.getCount());

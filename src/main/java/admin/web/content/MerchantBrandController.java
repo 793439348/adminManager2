@@ -78,13 +78,13 @@ public class MerchantBrandController extends AbstractActionController {
         final long t1 = System.currentTimeMillis();
         if (uEntity != null) {
             if (super.hasAccess(uEntity, actionKey)) {
-                Integer merchantId = HttpUtil.getIntParameter(request, "merchantId");
+                Integer merchantCode = HttpUtil.getIntParameter(request, "merchantCode");
                 String name = request.getParameter("name");
                 String code = request.getParameter("code");
                 String templete = request.getParameter("templete");
                 String mtemplete = request.getParameter("mtemplete");
                 Integer status = HttpUtil.getIntParameter(request, "status");
-                MerchantBrand merchantBrand = new MerchantBrand(merchantId, name, code, templete, mtemplete, status);
+                MerchantBrand merchantBrand = new MerchantBrand(merchantCode, name, code, templete, mtemplete, status);
                 try {
                     boolean b = merchantBrandService.add(merchantBrand);
                     json.set(0, "0-6");
@@ -158,9 +158,31 @@ public class MerchantBrandController extends AbstractActionController {
     @ResponseBody
     @RequestMapping(value = "/merchant-brand/get", method = RequestMethod.POST)
     public void MERCHANT_BRAND_GET(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+
+        final String actionKey = "/merchant-brand/get";
+        final long t1 = System.currentTimeMillis();
+        final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
+        final AdminUser uEntity = super.getCurrUser(session, request, response);
+//        if (uEntity != null) {
+//            if (super.hasAccess(uEntity, actionKey)) {
         Integer id = HttpUtil.getIntParameter(request, "id");
         MerchantBrandVO bean = merchantBrandService.getBean(id);
-        HttpUtil.write(response, JSON.toJSONString(bean), "text/json");
+        json.accumulate("bean", bean);
+
+        json.set(0, "0-3");
+//            }
+//            else {
+//                json.set(2, "2-4");
+//            }
+//        }
+//        else {
+//            json.set(2, "2-6");
+//        }
+//        final long t2 = System.currentTimeMillis();
+//        if (uEntity != null) {
+//            this.adminUserActionLogJob.add(request, actionKey, uEntity, json, t2 - t1);
+//        }
+        HttpUtil.write(response, json.toString(), "text/json");
     }
 
     @ResponseBody

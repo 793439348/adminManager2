@@ -1,161 +1,368 @@
-$(document).ready(function () {
-        var tableList = $('#table-merchant-list');
+var test = function() {
+
+    var tables = function () {
+        var tableList = $('#table-list');
         var tablePagelist = tableList.find('.page-list');
+        var getSearchParams = function() {
+            var name = tableList.find('input[name="merchant-name"]').val();
+            var code = tableList.find('input[name="merchant-id"]').val();
+            var status = tableList.find('select[name="type"]').val();
+            return {name: name, code: code, status: status};
+        };
+        var pagination = $.pagination({
+            render: tablePagelist,
+            pageSize: 5,
+            ajaxType: 'post',
+            ajaxUrl: './merchant/list',
+            ajaxData: getSearchParams,
+            beforeSend: function() {
+            },
+            complete: function() {
+            },
+            success: function(list) {
+                var table = tableList.find('table > tbody').empty();
+                var innerHtml = '';
+                $.each(list, function(idx, val) {
+                    var statusSelc = '';
+                    if (val.status == 1) {
+                        statusSelc = '<form>' +
+                            '<input type="radio" name="m-type" value="1" checked>启用' +
+                            '<input type="radio" name="m-type" value="2">停用' +
+                            '<input type="radio" name="m-type" value="3">关闭' +
+                            '<input type="radio" name="m-type" value="4">维护' +
+                            '</form>';
+                    } else if (val.status == 2) {
+                        statusSelc = '<form>' +
+                            '<input type="radio" name="m-type" value="1" >启用' +
+                            '<input type="radio" name="m-type" value="2" checked>停用' +
+                            '<input type="radio" name="m-type" value="3">关闭' +
+                            '<input type="radio" name="m-type" value="4">维护' +
+                            '</form>';
+                    } else if (val.status == 3) {
+                        statusSelc = '<form>' +
+                            '<input type="radio" name="m-type" value="1" >启用' +
+                            '<input type="radio" name="m-type" value="2">停用' +
+                            '<input type="radio" name="m-type" value="3" checked>关闭' +
+                            '<input type="radio" name="m-type" value="4">维护' +
+                            '</form>';
+                    } else if (val.status == 4) {
+                        statusSelc = '<form>' +
+                            '<input type="radio" name="m-type" value="1" >启用' +
+                            '<input type="radio" name="m-type" value="2">停用' +
+                            '<input type="radio" name="m-type" value="3">关闭' +
+                            '<input type="radio" name="m-type" value="4" checked>维护' +
+                            '</form>';
+                    }
+                    innerHtml +=
+                        '<tr class="align-center" data-id="' + val.id + '">'+
+                        '<td>' + val.id + '</td>' +
+                        '<td>' + val.nickname + '</td>' +
+                        '<td>' + val.code + '</td>' +
+                        '<td>' + val.name + '</td>' +
+                        '<td>' + val.balance + '</td>' +
+                        '<td>' + statusSelc + '</td>' +
+                        '<td>' + val.userNumber + '</td>' +
+                        '<td>' + val.createTime + '</td>' +
+                        '<td>' + val.loginTime + '</td>' +
+                        '<td>' +
+                        '<a data-command="edit" href="javascript:;" class="btn default btn-xs black"><i class="fa fa-edit"></i> 修改 </a>' +
+                        '</td>'+
+                        '</tr>';
+                });
+                table.html(innerHtml);
+                table.find('[data-command="edit"]').unbind('click').click(function() {
+                    var id = $(this).parents('tr').attr('data-id');
+                    doLoad(id, 'edit');
+                });
+                $("input[name=m-type]").click(function(){
+                    var id = $(this).parents('tr').attr('data-id');
+                    var status = $(this).val();
+                    var msg = '确定要修改状态？';
+                    bootbox.dialog({
+                        message: msg,
+                        title: '提示消息',
+                        buttons: {
+                            success: {
+                                label: '<i class="fa fa-check"></i> 确定',
+                                className: 'green-meadow',
+                                callback: function() {
+                                    updateStatus(id, status);
+                                }
+                            },
+                            danger: {
+                                label: '<i class="fa fa-undo"></i> 取消',
+                                className: 'btn-danger',
+                                callback: function() {}
+                            }
+                        }
+                    });
+                });
 
-        search("./merchant/list", 1);
-        addValidation($("#modal-add"));
-        modifyValidation($("#modal-modify"));
-        tableList.find('[data-command="search"]').unbind('click').click(function () {
-            var page = $('#page').text();
-            search("./merchant/list", parseInt(page));
+            },
+            pageError: function(response) {
+                bootbox.dialog({
+                    message: response.message,
+                    title: '提示消息',
+                    buttons: {
+                        success: {
+                            label: '<i class="fa fa-check"></i> 确定',
+                            className: 'btn-success',
+                            callback: function() {}
+                        }
+                    }
+                });
+            },
+            emptyData: function() {
+                var tds = tableList.find('thead tr th').size();
+                tableList.find('table > tbody').html('<tr><td colspan="'+tds+'">没有相关数据</td></tr>');
+            }
         });
 
-        $('#modal-add').click(function () {
-            addValidation(this);
-        });
-        $('#modal-modify').click(function () {
-            modifyValidation(this);
-        });
-        $('#btn-add').click(function () {
-            var innerhtml = '<div class="form-body">' +
-                '<div class="form-group">' +
-                '<label class="col-md-3 control-label">商户别名</label>' +
-                '<div class="col-md-9">' +
-                '<input name="nickname" class="form-control input-inline input-medium" autocomplete="off" type="text">' +
-                '<span class="help-inline" data-default="">请填写商户别名</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                '<label class="col-md-3 control-label">商户Id</label>' +
-                '<div class="col-md-9">' +
-                '<input name="code" class="form-control input-inline input-medium" autocomplete="off" type="text"' +
-                ' required>' +
-                '<span class="help-inline" data-default="">请填写商户Id</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                '<label class="col-md-3 control-label">管理员账号</label>' +
-                '<div class="col-md-9">' +
-                '<input name="account" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-                '<span class="help-inline" data-default="">请输入商户账号</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                '<label class="col-md-3 control-label">密码</label>' +
-                '<div class="col-md-9">' +
-                '<input name="pwd1" class="form-control input-inline input-medium" autocomplete="off" type="password" required>' +
-                '<span class="help-inline" data-default="">请输入密码</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                '<label class="col-md-3 control-label">确认密码</label>' +
-                '<div class="col-md-9">' +
-                '<input name="pwd2" class="form-control input-inline input-medium" autocomplete="off" type="password" required>' +
-                '<span class="help-inline" data-default="">请确认密码</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                '<label class="col-md-3 control-label">状态</label>' +
-                '<div class="col-md-9">' +
-                '<div class="radio-list">' +
-                '<input type="radio" name="status" value="1" checked="checked">启用' +
-                '<input type="radio" name="status" value="2">停用' +
-                '<input type="radio" name="status" value="3">关闭' +
-                '<input type="radio" name="status" value="4">维护' +
-                '</div>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group has-success">' +
-                '<label class="col-md-3 control-label">角色</label>' +
-                '<div class="col-md-9">' +
-                '<select name="role_id" class="form-control input-medium" aria-invalid="false">' +
-                '<option value="1" selected="selected">超级管理员</option>' +
-                '<option value="2">运营主管</option>' +
-                '<option value="3">客服专员</option>' +
-                '<option value="4">财务组长</option>' +
-                '<option value="5">普通客服</option>' +
-                '<option value="6">充值专员</option>' +
-                '<option value="7">打款专员</option>' +
-                '<option value="9">客服组长</option>' +
-                '<option value="10">风控专员</option>' +
-                '<option value="11">风控组长</option>' +
-                '<option value="12">审计组长</option>' +
-                '<option value="13">审计专员</option>' +
-                '</select>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group">' +
-                '<label class="col-md-3 control-label">手机</label>' +
-                '<div class="col-md-9">' +
-                '<input name="phone" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-                '<span class="help-inline" data-default="">请填写手机号</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group" >' +
-                '<label class="col-md-3 control-label">邮箱</label>' +
-                '<div class="col-md-9">' +
-                '<input name="email" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-                '<span class="help-inline" data-default="">请填写邮箱</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group" >' +
-                '<label class="col-md-3 control-label">qq</label>' +
-                '<div class="col-md-9">' +
-                '<input name="qq" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-                '<span class="help-inline" data-default="">请填写qq</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group" >' +
-                '<label class="col-md-3 control-label">微信</label>' +
-                '<div class="col-md-9">' +
-                '<input name="wechat" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-                '<span class="help-inline" data-default="">请填写微信</span>' +
-                '</div>' +
-                '</div>' +
-                '<div class="form-group" >' +
-                '<div class="col-md-9">' +
-                '<span id="add-err"></span>'+
-                '</div>' +
-                '</div>' +
-                '</div>';
+        var doLoad = function(id, action) {
+            var url = './merchant/get';
+            var params = {id: id};
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    if(data.error == 0) {
+                        EditModal.show(action, data);
+                    }
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('操作失败！' + data.message, '操作提示');
+                    }
+                }
+            });
+        }
 
-            $('#add-form').html(innerhtml);
+        var updateStatus = function(id, status) {
+            var params = {id: id, status: status};
+            var url = './merchant/modify-type';
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    if(data.error == 0) {
+                        reload();
+                        toastr['success']('操作成功', '操作提示');
+                    }
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('操作失败！' + data.message, '操作提示');
+                    }
+                }
+            });
+        }
+
+        tableList.find('[data-command="search"]').unbind('click').click(function() {
+            init();
         });
-        function addValidation(obj) {
-            var modal = $(obj);
-            var form = modal.find('form');
-            // 手机号码验证
-            jQuery.validator.addMethod("isPhone", function(value, element) {
-                var length = value.length;
-                return this.optional(element) || (length == 11 && /^[1][3,4,5,7,8][0-9]{9}$/.test(value));
-            }, "请正确填写您的手机号码。");
-            // 邮箱验证
-            jQuery.validator.addMethod("isEmail",function (val, element) {
-                return this.optional(element) || (/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$/.test(val));
-            },"请填写正确的邮箱。");
-            // qq验证
-            jQuery.validator.addMethod("isQQ",function (val, element) {
-                return this.optional(element) || (/[1-9][0-9]{4,14}/.test(val));
-            },"请填写正确的QQ号码。");
-            // 微信验证
-            jQuery.validator.addMethod("isWechat",function (val, element) {
-                return this.optional(element) || (/^[a-zA-Z\d_]{5,}$/.test(val));
-            },"请填写正确的微信号。");
-            // 非法字符
-            jQuery.validator.addMethod("isInegal",function (val, element) {
-                return this.optional(element) || (/^[0-9a-zA-Z_]{1,}$/.test(val));
-            },"包含非法字符，只能使用字母、数字、下划线。");
+        tableList.find('[data-command="add"]').unbind('click').click(function() {
+            AddModal.show();
+        });
+        var init = function() {
+            pagination.init();
+        };
+        var reload = function() {
+            pagination.reload();
+        };
+        return {
+            init: init,
+            reload: reload
+        }
+    }();
+
+    var EditModal = function() {
+        var modal = $('#modal-edit');
+        var form = modal.find('form');
+
+        var initForm = function() {
             form.validate({
                 rules: {
                     nickname: {
+                        required: true
+                    },
+                    code: {
                         required: true,
+                        minlength: 4,
+                        maxlength: 4,
+                        isInegal: true
+                    },
+                    account: {
+                        required: true,
+                        isInegal: true
+                    },
+                    phone: {
+                        required: true,
+                        isPhone: true
+                    },
+                    email:{
+                        required: true,
+                        isEmail: true
+                    },
+                    qq:{
+                        required: true,
+                        isQQ: true
+                    },
+                    wechat:{
+                        required: true,
+                        isWechat: true
+                    }
+                },
+                messages: {
+                    nickname: {
+                        required: '商户别名不能为空！'
+                    },
+                    code: {
+                        required: '商户Id不能为空！',
+                        minlength: '至少输入{0}个字符',
+                        maxlength: '最多输入{0}个字符'
+                    },
+                    account: {
+                        required: '商户账号不能为空！'
+                    },
+                    phone: {
+                        required: '手机号不能为空！'
+                    },
+                    email: {
+                        required: '邮箱不能为空！'
+                    },
+                    qq: {
+                        required: '手机号不能为空！'
+                    },
+                    wechat: {
+                        required: '微信号不能为空！'
+                    }
+                },
+                invalidHandler: function (event, validator) {},
+                errorPlacement: function (error, element) {
+                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-warning"></i> ' + error.text());
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
+                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-check"></i> 填写正确。');
+                }
+            });
+            modal.find('[data-command="submit"]').unbind('click').click(function() {
+                if(form.validate().form()) {
+                    doSubmit();
+                }
+            });
+        }
+
+        var isSending = false;
+        var doSubmit = function() {
+            if(isSending) return;
+            var action = modal.attr('data-action');
+            var params = {};
+            var url = './merchant/update';
+            var id = modal.attr('data-id');
+            var nickname = form.find('input[name="nickname"]').val();
+            var code = form.find('input[name="code"]').val();
+            var account = form.find('input[name="account"]').val();
+            var status = form.find('input[name="status"]:checked').val();
+            var roleId = form.find('select[name="roleId"]').find("option:selected").val();
+            var phone = form.find('input[name="phone"]').val();
+            var email = form.find('input[name="email"]').val();
+            var qq = form.find('input[name="qq"]').val();
+            var wechat = form.find('input[name="wechat"]').val();
+            params = {id: id, nickname: nickname, code: code, account: account, status: status,roleId:roleId,phone:phone,email:email,qq:qq,wechat:wechat};
+            isSending = true;
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    isSending = false;
+                    if(data.error == 0) {
+                        modal.modal('hide');
+                        tables.init();
+                        toastr['success']('修改成功！', '操作提示');
+                    }
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('修改失败！' + data.message, '操作提示');
+                    }
+                }
+            });
+        };
+
+        var show = function(action, data) {
+            form[0].reset();
+            modal.attr('data-action', 'edit');
+            modal.find('.modal-title').html('修改商户');
+            modal.attr('data-id', data.bean.id);
+            form.find('input[name="nickname"]').val(data.bean.nickname);
+            form.find('input[name="code"]').val(data.bean.code);
+            form.find('input[name="account"]').val(data.bean.account);
+            form.find('input[name="nickname"]').val(data.bean.nickname);
+            form.find('input[name="status"][value="' + data.bean.status + '"]').attr('checked', true);
+            form.find('select[name="roleId"]').find('option[value="' + data.bean.roleId + '"]').attr('selected', true);
+            form.find('input[name="phone"]').val(data.bean.phone);
+            form.find('input[name="email"]').val(data.bean.email);
+            form.find('input[name="qq"]').val(data.bean.qq);
+            form.find('input[name="wechat"]').val(data.bean.wechat);
+
+
+            Metronic.initAjax();
+            form.find('.help-inline').empty();
+            form.find('.has-error').removeClass('has-error');
+            form.find('.has-success').removeClass('has-success');
+            modal.modal('show');
+        };
+
+        var init = function() {
+            initForm();
+        };
+
+        return {
+            init: init,
+            show: show
+        }
+
+    }();
+    var AddModal = function() {
+        var modal = $('#modal-add');
+        var form = $('form:last');
+        // 手机号码验证
+        jQuery.validator.addMethod("isPhone", function(value, element) {
+            var length = value.length;
+            return this.optional(element) || (length == 11 && /^[1][3,4,5,7,8][0-9]{9}$/.test(value));
+        }, "请正确填写您的手机号码。");
+        // 邮箱验证
+        jQuery.validator.addMethod("isEmail",function (val, element) {
+            return this.optional(element) || (/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$/.test(val));
+        },"请填写正确的邮箱。");
+        // qq验证
+        jQuery.validator.addMethod("isQQ",function (val, element) {
+            return this.optional(element) || (/[1-9][0-9]{4,14}/.test(val));
+        },"请填写正确的QQ号码。");
+        // 微信验证
+        jQuery.validator.addMethod("isWechat",function (val, element) {
+            return this.optional(element) || (/^[a-zA-Z\d_]{5,}$/.test(val));
+        },"请填写正确的微信号。");
+        // 非法字符
+        jQuery.validator.addMethod("isInegal",function (val, element) {
+            return this.optional(element) || (/^[0-9a-zA-Z_]{1,}$/.test(val));
+        },"包含非法字符，只能使用字母、数字、下划线。");
+        var initForm = function() {
+            form.validate({
+                rules: {
+                    nickname: {
+                        required: true
                     },
                     code: {
                         required: true,
                         minlength: 4,
                         maxlength: 4,
                         remote: {
-                            url: '/merchant/notexists',
+                            url: '/merchant/exists',
                             type: 'post'
                         },
                         isInegal: true
@@ -163,7 +370,7 @@ $(document).ready(function () {
                     account: {
                         required: true,
                         remote: {
-                            url: '/merchant/notexists',
+                            url: '/merchant/exists',
                             type: 'post'
                         },
                         isInegal: true
@@ -248,413 +455,80 @@ $(document).ready(function () {
             });
             modal.find('[data-command="submit"]').unbind('click').click(function() {
                 if(form.validate().form()) {
-                    sub();
+                    doSubmit();
                 }
             });
-        }
-        function modifyValidation(obj) {
-            var modal = $(obj);
-            var form = modal.find('form');
-            // 手机号码验证
-            jQuery.validator.addMethod("isPhone", function(value, element) {
-                var length = value.length;
-                return this.optional(element) || (length == 11 && /^[1][3,4,5,7,8][0-9]{9}$/.test(value));
-            }, "请正确填写您的手机号码。");
-            // 邮箱验证
-            jQuery.validator.addMethod("isEmail",function (val, element) {
-                return this.optional(element) || (/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$/.test(val));
-            },"请填写正确的邮箱。");
-            // qq验证
-            jQuery.validator.addMethod("isQQ",function (val, element) {
-                return this.optional(element) || (/[1-9][0-9]{4,14}/.test(val));
-            },"请填写正确的QQ号码。");
-            // 微信验证
-            jQuery.validator.addMethod("isWechat",function (val, element) {
-                return this.optional(element) || (/^[a-zA-Z\d_]{5,}$/.test(val));
-            },"请填写正确的微信号。");
-            // 非法字符
-            jQuery.validator.addMethod("isInegal",function (val, element) {
-                return this.optional(element) || (/^[0-9a-zA-Z_]{1,}$/.test(val));
-            },"包含非法字符，只能使用字母、数字、下划线。");
-            form.validate({
-                rules: {
-                    nickname: {
-                        required: true
-                    },
-                    code: {
-                        required: true,
-                        minlength: 4,
-                        maxlength: 4,
-                        /*remote: {
-                            url: '',
-                            type: 'post'
-                        },*/
-                        isInegal: true
-                    },
-                    account: {
-                        required: true,
-                        isInegal: true
-                    },
-                    phone: {
-                        required: true,
-                        isPhone: true
-                    },
-                    email:{
-                        required: true,
-                        isEmail: true
-                    },
-                    qq:{
-                        required: true,
-                        isQQ: true
-                    },
-                    wechat:{
-                        required: true,
-                        isWechat: true
-                    }
-                },
-                messages: {
-                    nickname: {
-                        required: '商户别名不能为空！'
-                    },
-                    code: {
-                        required: '商户Id不能为空！',
-                        minlength: '至少输入{0}个字符',
-                        maxlength: '最多输入{0}个字符'
-                        /*,
-                        remote: '商户Id已存在！'*/
-                    },
-                    account: {
-                        required: '商户账号不能为空！',
-                    },
-                    phone: {
-                        required: '手机号不能为空！'
-                    },
-                    email: {
-                        required: '邮箱不能为空！'
-                    },
-                    qq: {
-                        required: '手机号不能为空！'
-                    },
-                    wechat: {
-                        required: '微信号不能为空！'
-                    }
-                },
-                invalidHandler: function (event, validator) {},
-                errorPlacement: function (error, element) {
-                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-warning"></i> ' + error.text());
-                },
-                highlight: function (element) {
-                    $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-                },
-                unhighlight: function (element) {
-                    $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-check"></i> 填写正确。');
-                }
-            });
-            modal.find('[data-command="submit"]').unbind('click').click(function() {
-                if(form.validate().form()) {
-                    sub1();
-                }
-            });
-        }
-        function search(url, page) {
-            var end = $('#end').val();
-            if (end && page > end) {
-                page = end;
-            }
-            if (page <= 0) {
-                page = 1;
-            }
-            var merchantname = tableList.find('input[name=merchant-name]').val();
-            var id = tableList.find('input[name=merchant-id]').val();
-            var type = tableList.find('select[name="type"]').val();
-            var data = {name: merchantname, code: id, status: type, start: (page - 1)*10, limit: 10};
+        };
+
+        var isSending = false;
+        var doSubmit = function() {
+            if(isSending) return;
+            var action = modal.attr('data-action');
+            var params = {};
+            var url = './merchant/add';
+
+            var nickname = form.find('input[name="nickname"]').val();
+            var code = form.find('input[name="code"]').val();
+            var account = form.find('input[name="account"]').val();
+            var pwd1 = form.find('input[name="pwd1"]').val();
+            var pwd2 = form.find('input[name="pwd2"]').val();
+            var status = form.find('input[name="status"]:checked').val();
+            var role_id = form.find('select[name="roleId"]').find("option:selected").val();
+            var phone = form.find('input[name="phone"]').val();
+            var email = form.find('input[name="email"]').val();
+            var qq = form.find('input[name="qq"]').val();
+            var wechat = form.find('input[name="wechat"]').val();
+            params = { nickname: nickname, code: code, account: account,pwd1:pwd1, status: status,role_id:role_id,phone:phone,email:email,qq:qq,wechat:wechat};
+            isSending = true;
             $.ajax({
-                type: 'post',
-                url: url,
-                data: data,
-                dataType: 'json',
-                success: function (list) {
-                    var table = tableList.find('table > tbody').empty();
-                    var innerHtml = '';
-                    $.each(list.data, function (idx, val) {
-                        var merchantType = '';
-                        if (val.status == 1) {
-                            merchantType = '<form>' +
-                                '<input type="radio" name="m-type" value="1" checked>启用' +
-                                '<input type="radio" name="m-type" value="2">停用' +
-                                '<input type="radio" name="m-type" value="3">关闭' +
-                                '<input type="radio" name="m-type" value="4">维护' +
-                                '</form>';
-                        } else if (val.status == 2) {
-                            merchantType = '<form method="post" action="">' +
-                                '<input type="radio" name="m-type" value="1" >启用' +
-                                '<input type="radio" name="m-type" value="2" checked>停用' +
-                                '<input type="radio" name="m-type" value="3">关闭' +
-                                '<input type="radio" name="m-type" value="4">维护' +
-                                '</form>';
-                        } else if (val.status == 3) {
-                            merchantType = '<form method="post" action="">' +
-                                '<input type="radio" name="m-type" value="1" >启用' +
-                                '<input type="radio" name="m-type" value="2">停用' +
-                                '<input type="radio" name="m-type" value="3" checked>关闭' +
-                                '<input type="radio" name="m-type" value="4">维护' +
-                                '</form>';
-                        } else if (val.status == 4) {
-                            merchantType = '<form method="post" action="">' +
-                                '<input type="radio" name="m-type" value="1" >启用' +
-                                '<input type="radio" name="m-type" value="2">停用' +
-                                '<input type="radio" name="m-type" value="3">关闭' +
-                                '<input type="radio" name="m-type" value="4" checked>维护' +
-                                '</form>';
-                        }
-                        innerHtml +=
-                            '<tr class="align-center" data-id="' + val.id + '">' +
-                            '<td>' + val.id + '</td>' +
-                            '<td>' + val.nickname + '</td>' +
-                            '<td>' + val.code + '</td>' +
-                            '<td>' + val.name + '</td>' +
-                            '<td>' + val.balance + '</td>' +
-                            '<td>' + merchantType + '</td>' +
-                            '<td>' + val.userNumber + '</td>' +
-                            '<td>' + val.createTime + '</td>' +
-                            '<td>' + val.loginTime + '</td>' +
-                            '<td>' +
-                            '<button class="btn gray" data-toggle="modal" data-target="#modal-modify" ' +
-                            'onclick="modify('+val.id+')">' +
-                            '修改' +
-                            '</button>'+
-                            '</td>' +
-                            '</tr>';
-                    });
-                    table.html(innerHtml);
-                    var totalCount = list.totalCount;
-                    var tatalPage = Math.ceil(totalCount / 10);
-                    $('#totalCount').text(totalCount);
-                    $('#page').text(page);
-                    $('#totalPage').text(tatalPage);
-                    $('#end').val(tatalPage);
-                    $('#inputPage').val();
-                    /*查询结果为空*/
-                    if (list.data.length == 0) {
-                        var tds = tableList.find('thead tr th').size();
-                        tableList.find('table > tbody').html('<tr><td colspan="' + tds + '">没有相关数据</td></tr>');
-                        $('#page').text(0);
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    isSending = false;
+                    if(data.error == 0) {
+                        modal.modal('hide');
+                        tables.init();
+                        toastr['success']('添加完成！', '操作提示');
                     }
-
-                    $("input[name=m-type]").click(function(){
-                        var type = this.value;
-                        var id = $(this).parent().parent().siblings(":first").text();
-                        modifyType(id, type);
-                    });
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('添加失败！' + data.message, '操作提示');
+                    }
                 }
             });
         }
-        /*首页*/
-        $('#top').click(function () {
-            search("./merchant/list", 1);
-        });
-        /*尾页*/
-        $('#end').click(function () {
-            var page = $('#end').val();
-            search("./merchant/list", parseInt(page));
-        });
-        /*上页*/
-        $('#prev').click(function () {
-            var page = $('#page').text();
-            search("./merchant/list", parseInt(page) - 1);
-        });
-        /*下页*/
-        $('#next').click(function () {
-            var page = $('#page').text();
-            search("./merchant/list", parseInt(page) + 1);
-        });
-        $('#btn-go').click(function () {
-            var page = $('#inputPage').val();
-            if(!page || page == ''){
-                page = 1;
-            }
-            search("./merchant/list", parseInt(page));
-        });
 
+        var show = function() {
+            form[0].reset();
+            modal.attr('data-action', 'add');
+            modal.removeAttr('data-id');
+            modal.find('.modal-title').html('添加商户');
 
-    });
+            Metronic.initAjax();
 
-function modifyType(id,type) {
-    $.ajax({
-        type: 'post',
-        url: '/merchant/modify-type',
-        data: "id="+id+"&status="+type,
-        dataType: 'json',
-        success: function (dat){
-            if (dat.error != 0) {
-                alert(dat.message);
-            }
+            form.find('.help-inline').empty();
+            form.find('.has-error').removeClass('has-error');
+            form.find('.has-success').removeClass('has-success');
+            modal.modal('show');
         }
-    });
-}
-/*商户信息修改*/
-function modify(id) {
 
-    var innerhtml = '<div class="form-body">' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">商户别名</label>' +
-        '<div class="col-md-9">' +
-        '<input id="nickname" name="nickname" class="form-control input-inline input-medium" autocomplete="off" type="text">' +
-        '<span class="help-inline" data-default=""></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">商户Id</label>' +
-        '<div class="col-md-9">' +
-        '<input id="code" name="code" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-        '<span class="help-inline" data-default=""></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">商户账号</label>' +
-        '<div class="col-md-9">' +
-        '<input id="name" name="account" class="form-control input-inline input-medium" autocomplete="off" type="text"' +
-        ' required>' +
-        '<span class="help-inline" data-default=""></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">状态</label>' +
-        '<div class="col-md-9">' +
-        '<input id="status1" type="radio" name="status" value="1">启用' +
-        '<input id="status2" type="radio" name="status" value="2">停用' +
-        '<input id="status3" type="radio" name="status" value="3">关闭' +
-        '<input id="status4" type="radio" name="status" value="4">维护' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group has-success">' +
-        '<label class="col-md-3 control-label">角色</label>' +
-        '<div class="col-md-9">' +
-        '<select id="role_id" name="roleId" class="form-control input-medium" aria-invalid="false">' +
-        '<option value="1">超级管理员</option>' +
-        '<option value="2">运营主管</option>' +
-        '<option value="3">客服专员</option>' +
-        '<option value="4">财务组长</option>' +
-        '<option value="5">普通客服</option>' +
-        '<option value="6">充值专员</option>' +
-        '<option value="7">打款专员</option>' +
-        '<option value="9">客服组长</option>' +
-        '<option value="10">风控专员</option>' +
-        '<option value="11">风控组长</option>' +
-        '<option value="12">审计组长</option>' +
-        '<option value="13">审计专员</option>' +
-        '</select>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">手机</label>' +
-        '<div class="col-md-9">' +
-        '<input id="phone" name="phone" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-        '<span class="help-inline" data-default=""></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group" >' +
-        '<label class="col-md-3 control-label">邮箱</label>' +
-        '<div class="col-md-9">' +
-        '<input id="email" name="email" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-        '<span class="help-inline" data-default=""></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group" >' +
-        '<label class="col-md-3 control-label">qq</label>' +
-        '<div class="col-md-9">' +
-        '<input id="qq" name="qq" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-        '<span class="help-inline" data-default=""></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group" >' +
-        '<label class="col-md-3 control-label">微信</label>' +
-        '<div class="col-md-9">' +
-        '<input id="wechat" name="wechat" class="form-control input-inline input-medium" autocomplete="off" type="text" required>' +
-        '<span class="help-inline" data-default=""></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group" >' +
-        '<label class="col-md-3 control-label"></label>' +
-        '<div class="col-md-9">' +
-        '<input id="id" name="id" class="form-control input-inline input-medium" autocomplete="off" type="hidden">' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group" >' +
-        '<div class="col-md-9">' +
-        '<span id="modify-err"></span>' +
-        '</div>' +
-        '</div>' +
-        '</div>';
-
-    $('#modify-form').html(innerhtml);
-
-    $.ajax({
-        type: 'post',
-        url: '/merchant/get',
-        data: "id="+id,
-        dataType: 'json',
-        success: function (bean) {
-            $('#nickname').val(bean.nickname);
-            $('#code').val(bean.code);
-            $('#name').val(bean.account);
-            $('#email').val(bean.email);
-            $('#qq').val(bean.qq);
-            $('#wechat').val(bean.wechat);
-            $('#phone').val(bean.phone);
-            $('#id').val(bean.id);
-            if(parseInt(bean.status)==1)
-                $('#status1').attr("checked","checked");
-            if(parseInt(bean.status)==2)
-                $('#status2').attr("checked","checked");
-            if(parseInt(bean.status)==3)
-                $('#status3').attr("checked","checked");
-            if(parseInt(bean.status)==4)
-                $('#status4').attr("checked","checked");
-
-            var opts = $('#role_id option');
-            $(opts[bean.roleId]).attr("selected", true);
-            $('#modal-modify').modal('show');
+        var init = function() {
+            initForm();
         }
-    });
-}
-/*新增商户提交*/
-function sub() {
-    var data = $("form:first").serialize();
-    $.ajax({
-        type: 'post',
-        url: '/merchant/add',
-        data: data,
-        dataType: 'json',
-        success: function (data) {
-            if (data.error == "0") {
-                alert(data.message);
-                $('#modal-add').modal("hide");
-                window.location.reload();
-            }else{
-                $('#add-err').text(data.message).css("color", "red");
-            }
-        }
-    });
-}
-/*修改商户提交*/
-function sub1() {
-    var data = $("form:last").serialize();
-    $.ajax({
-        type: 'post',
-        url: '/merchant/update',
-        data: data,
-        dataType: 'json',
-        success: function (data) {
-            if (data.error == "0") {
-                alert(data.message);
-                $('#modal-modify').modal("hide");
-                window.location.reload();
-            }else{
-                $('#modify-err').text(data.message).css("color", "red");
-            }
 
+        return {
+            init: init,
+            show: show
         }
-    });
-}
+
+    }();
+
+    return {
+        init: function() {
+            tables.init();
+            EditModal.init();
+            AddModal.init();
+        }
+    }
+}();

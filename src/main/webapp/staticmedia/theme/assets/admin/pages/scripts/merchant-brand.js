@@ -1,26 +1,36 @@
-$(document).ready(function () {
+var test = function() {
 
-    var tableList = $('#table-merchant-list');
-    var tablePagelist = tableList.find('.page-list');
-
-    function search(url) {
-        $.ajax({
-            type: 'post',
-            url: url,
-            data: '',
-            dataType: 'json',
-            success: function (list) {
-                var table = $('#tab-tbody');
+    var tables = function () {
+        var tableList = $('#table-list');
+        var tablePagelist = tableList.find('.page-list');
+        // var getSearchParams = function() {
+        //     var username = tableList.find('input[name="merchant-name"]').val();
+        //     var keyword = tableList.find('input[name="merchant-id"]').val();
+        //     var status = tableList.find('select[name="type"]').val();
+        //     return {name: username, code: keyword, status: status};
+        // };
+        var pagination = $.pagination({
+            render: tablePagelist,
+            pageSize: 5,
+            ajaxType: 'post',
+            ajaxUrl: './merchant-brand/list',
+            ajaxData: /*getSearchParams*/'',
+            beforeSend: function() {
+            },
+            complete: function() {
+            },
+            success: function(list) {
+                var table = tableList.find('table > tbody').empty();
                 var innerHtml = '';
-                $.each(list.data, function (idx, val) {
+                $.each(list, function(idx, val) {
                     var type = '';
                     if (val.status == 0) {
-                        type = '<form method="post" action="">' +
+                        type = '<form>' +
                             '<input type="radio" name="m-type" value="0" checked>启用' +
                             '<input type="radio" name="m-type" value="1">停用' +
                             '</form>';
                     } else if (val.status == 1) {
-                        type = '<form method="post" action="">' +
+                        type = '<form>' +
                             '<input type="radio" name="m-type" value="0" >启用' +
                             '<input type="radio" name="m-type" value="1" checked>停用' +
                             '</form>';
@@ -28,10 +38,10 @@ $(document).ready(function () {
                     var templeImg = '';
                     var mtempleImg = '';
                     if (val.templete) {
-                        templeImg = val.templete.smallImage +"?"+randomNum();
+                        templeImg = val.templete.smallImage +"?"+Math.random();
                     }
                     if (val.mtemplete) {
-                        mtempleImg = val.mtemplete.smallImage +"?"+randomNum();
+                        mtempleImg = val.mtemplete.smallImage +"?"+Math.random();
 
                     }
                     innerHtml +=
@@ -44,431 +54,481 @@ $(document).ready(function () {
                         '<td>' + '<img src="' + mtempleImg + '" alt="图片" width="40" height="40">' + '</td>' +
                         '<td>' + type + '</td>' +
                         '<td>' +
-                        '<button class="btn gray" data-toggle="modal" data-target="#modal-modify" ' +
-                        'onclick="modify(' + val.id + ')">' +
-                        '修改' +
-                        '</button>' +
+                        '<a data-command="edit" href="javascript:;" class="btn default btn-xs black"><i class="fa fa-edit"></i> 修改 </a>' +
                         '</td>' +
                         '</tr>';
                 });
                 table.html(innerHtml);
+                table.find('[data-command="edit"]').unbind('click').click(function() {
+                    var id = $(this).parents('tr').attr('data-id');
+                    doLoad(id, 'edit');
+                });
+                $("input[name=m-type]").click(function(){
 
-                /*查询结果为空*/
-                if (list.data.length == 0) {
-                    var tds = tableList.find('thead tr th').size();
-                    tableList.find('table > tbody').html('<tr><td colspan="' + tds + '">没有相关数据</td></tr>');
-                    $('#page').text(0);
-                }
-
-                $("input[name=m-type]").click(function () {
-                    var type = this.value;
-                    var id = $(this).parent().parent().siblings(":first").text();
-                    modifyType(id, type);
+                    var id = $(this).parents('tr').attr('data-id');
+                    var status = $(this).val();
+                    var msg = '确定要修改状态？';
+                    bootbox.dialog({
+                        message: msg,
+                        title: '提示消息',
+                        buttons: {
+                            success: {
+                                label: '<i class="fa fa-check"></i> 确定',
+                                className: 'green-meadow',
+                                callback: function() {
+                                    updateStatus(id, status);
+                                }
+                            },
+                            danger: {
+                                label: '<i class="fa fa-undo"></i> 取消',
+                                className: 'btn-danger',
+                                callback: function() {}
+                            }
+                        }
+                    });
                 });
 
-            }
-        });
-    }
-
-    search("./merchant-brand/list");
-    validation($('#modal-add'));
-    validationModify($('#modal-modify'));
-    tableList.find('[data-command="search"]').unbind('click').click(function () {
-        search("./merchant-brand/list");
-    });
-
-    $('#btn-add').click(function () {
-        var innerhtml = '<div class="form-body">' +
-            '<div class="form-group">' +
-            '<label class="col-md-3 control-label">商户名</label>' +
-            '<div class="col-md-9">' +
-            '<select id="merchantCode" name="merchantId">' +
-            '</select>' +
-            '</div>' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="col-md-3 control-label">品牌名称</label>' +
-            '<div class="col-md-9">' +
-            '<input name="name" class="form-control input-inline input-medium" autocomplete="off" type="text">' +
-            '<span class="help-inline" data-default="">请填写品牌名称。</span>' +
-            '</div>' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="col-md-3 control-label">品牌代号</label>' +
-            '<div class="col-md-9">' +
-            '<input name="code" class="form-control input-inline input-medium" autocomplete="off" type="text">' +
-            '<span class="help-inline" data-default="">请输入品牌代号。</span>' +
-            '</div>' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="col-md-3 control-label">状态</label>' +
-            '<div class="col-md-9">' +
-            '<input type="radio" name="status" value="0" checked="">启用' +
-            '<input type="radio" name="status" value="1">停用' +
-            '</div>' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="col-md-3 control-label">移动端模板</label>' +
-            '<div class="col-md-9">' +
-            '<select id="add-temp" name="templete" onchange="showTempIMG(this)">' +
-            '</select>' +
-            '<br/>' +
-            '<img src="" alt="预览图" width="40" height="40">' +
-            '</div>' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="col-md-3 control-label">PC端模板</label>' +
-            '<div class="col-md-9">' +
-            '<select id="add-mtemp" name="mtemplete" onchange="showTempIMG(this)">' +
-            '</select>' +
-            '<br/>' +
-            '<img src="" alt="预览图" width="40" height="40">' +
-            '</div>' +
-            '</div>' +
-            '</div>';
-
-        $('#add-form').html(innerhtml);
-
-        findMerchant($('#merchantCode'),null);
-        findTemplete($("#add-temp"),null, $("#add-mtemp"),null);
-    })
-
-    function validation(obj) {
-        var modal = $(obj);
-        var form = modal.find('form');
-
-        form.validate({
-            rules: {
-                name: {
-                    required: true,
-                    minlength: 4,
-                    maxlength: 20
-                },
-                code: {
-                    required: true,
-                    minlength: 4,
-                    maxlength: 10,
-                    remote: {
-                        url: '/merchant-brand/notexists',
-                        type: 'post'
+            },
+            pageError: function(response) {
+                bootbox.dialog({
+                    message: response.message,
+                    title: '提示消息',
+                    buttons: {
+                        success: {
+                            label: '<i class="fa fa-check"></i> 确定',
+                            className: 'btn-success',
+                            callback: function() {}
+                        }
                     }
-                }
+                });
             },
-            messages: {
-                name: {
-                    required: '品牌名称不能为空！',
-                    minlength: '至少输入{0}个字符',
-                    maxlength: '最多输入{0}个字符'
-                },
-                code: {
-                    required: '品牌代号不能为空！',
-                    minlength: '至少输入{0}个字符',
-                    maxlength: '最多输入{0}个字符',
-                    remote: '品牌代号已存在！'
-                }
-            },
-            invalidHandler: function (event, validator) {
-            },
-            errorPlacement: function (error, element) {
-                $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-warning"></i> ' + error.text());
-            },
-            highlight: function (element) {
-                $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-            },
-            unhighlight: function (element) {
-                $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-                $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-check"></i> 填写正确。');
+            emptyData: function() {
+                var tds = tableList.find('thead tr th').size();
+                tableList.find('table > tbody').html('<tr><td colspan="'+tds+'">没有相关数据</td></tr>');
             }
         });
-        modal.find('[data-command="submit"]').unbind('click').click(function () {
-            if (form.validate().form()) {
-                sub();
-            }
-        });
-    }
 
-    $('#modal-add').click(function () {
-        validation(this);
-    });
-    $('#modal-modify').click(function () {
-        validationModify(this);
-    });
-
-    function validationModify(obj) {
-        var modal = $(obj);
-        var form = modal.find('form');
-
-        form.validate({
-            rules: {
-                name: {
-                    required: true,
-                    minlength: 4,
-                    maxlength: 20
-                }
-            },
-            messages: {
-                name: {
-                    required: '品牌名称不能为空！',
-                    minlength: '至少输入{0}个字符',
-                    maxlength: '最多输入{0}个字符'
-                }
-            },
-            invalidHandler: function (event, validator) {
-            },
-            errorPlacement: function (error, element) {
-                $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-warning"></i> ' + error.text());
-            },
-            highlight: function (element) {
-                $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-            },
-            unhighlight: function (element) {
-                $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-                $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-check"></i> 填写正确。');
-            }
-        });
-        modal.find('[data-command="submit"]').unbind('click').click(function () {
-            if (form.validate().form()) {
-                sub1();
-            }
-        });
-    }
-
-});
-
-/*修改*/
-function modify(id) {
-
-    var innerhtml = '<div class="form-group">' +
-        '<label class="col-md-3 control-label">商户名</label>' +
-        '<div class="col-md-9">' +
-        '<select id="mName" name="merchantId">' +
-        '</select>' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">品牌名称</label>' +
-        '<div class="col-md-9">' +
-        '<input id="bName" name="name" class="form-control input-inline input-medium"' +
-        ' autocomplete="off" type="text">' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">品牌代号</label>' +
-        '<div class="col-md-9">' +
-        '<input id="brand-code" name="code" class="form-control input-inline input-medium"' +
-        ' autocomplete="off" type="text" >' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">状态</label>' +
-        '<div id="status" class="col-md-9">' +
-        '<input type="radio" name="status" value="0">启用' +
-        '<input type="radio" name="status" value="1">停用' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">移动端模板</label>' +
-        '<div class="col-md-9">' +
-        '<select id="modify-temp" name="templete" onchange="showTempIMG(this)">' +
-        '</select>' +
-        '<br/>' +
-        '<img id="b-templete" src="" alt="图片" width="40" height="40">' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<label class="col-md-3 control-label">PC端模板</label>' +
-        '<div class="col-md-9">' +
-        '<select id="modify-mtemp" name="mtemplete" onchange="showTempIMG(this)">' +
-        '</select>' +
-        '<br/>' +
-        '<img id="b-mtemplete" src="" alt="图片" width="40" height="40">' +
-        '</div>' +
-        '</div>' +
-        '<div class="form-group">' +
-        '<div class="col-md-9">' +
-        '<input type="hidden" name="id" id="hid-id">' +
-        '</div>' +
-        '</div>';
-
-    $('#modify-form').html(innerhtml);
-
-    $.ajax({
-        type: 'post',
-        url: '/merchant-brand/get',
-        data: "id=" + id,
-        dataType: 'json',
-        success: function (bean) {
-            $('#bName').val(bean.name);
-            $('#brand-code').val(bean.code);
-
-            // $('#b-templete').attr("src", bean.templete.smallImage+"?"+randomNum());
-            // $('#b-mtemplete').attr("src", bean.mtemplete.smallImage+"?"+randomNum());
-            $('#hid-id').val(bean.id);
-            var ipts = $('#status').find('input');
-            $(ipts[bean.status]).attr("checked", "checked");
-            $('#modal-modify').modal;
-
-            findMerchant($('#mName'), bean.merchantCode);
-            findTemplete($("#modify-temp"), bean.templete.id, $("#modify-mtemp"), bean.mtemplete.id);
-        }
-    });
-
-
-}
-
-/*新增提交*/
-function sub() {
-    var data = $("form:first").serialize();
-    $.ajax({
-        type: 'post',
-        url: '/merchant-brand/add',
-        data: data,
-        dataType: 'json',
-        success: function (data) {
-            if (data.error == "0") {
-                alert(data.message);
-                $('#modal-add').modal("hide");
-                window.location.reload();
-            } else {
-                alert(data.message)
-            }
-        }
-    });
-}
-
-/*修改提交*/
-function sub1() {
-    var data = $("form:last").serialize();
-    $.ajax({
-        type: 'post',
-        url: '/merchant-brand/update',
-        data: data,
-        dataType: 'json',
-        success: function (data) {
-            if (data.error == 0) {
-                alert(data.message);
-                $('#modal-modify').modal("hide");
-                window.location.reload();
-            } else {
-                alert(data.message)
-            }
-        }
-    });
-}
-
-function modifyType(id, type) {
-    $.ajax({
-        type: 'post',
-        url: '/merchant-brand/modify-type',
-        data: "id=" + id + "&status=" + type,
-        dataType: 'json',
-        success: function (dat) {
-            if (data.error != 0) {
-                alert(dat.message);
-            }
-        }
-    });
-}
-
-function addBrand() {
-    findMerchant($("#merchantCode"),null);
-    findTemplete($("#add-temp"),null, $("#add-mtemp"),null);
-
-}
-
-function findTemplete(obj1, obj1Id, obj2, obj2Id) {
-    $.ajax({
-        type: 'post',
-        url: '/site-template/list',
-        data: '',
-        dataType: "json",
-        success: function (list) {
-            var innerhtml1 = '';
-            var innerhtml2 = '';
-            var boo1 = true;
-            var boo2 = true;
-            var src1 = '';
-            var src2 = '';
-            $.each(list, function (idx, val) {
-                if (val.type == 1) {
-                    /*手机端*/
-                    if (boo1 && obj1Id == val.id) {
-                        src1 = val.smallImage;
-                        boo1 = false;
-                        innerhtml1 += '<option value="' + val.code + '" selected>' + val.code + '</option>';
-                    }else if(boo1 && !obj1Id){
-                        src1 = val.smallImage;
-                        boo1 = false;
-                        innerhtml1 += '<option value="' + val.code + '" selected>' + val.code + '</option>';
-                    }else {
-                        innerhtml1 += '<option value="' + val.code + '">' + val.code + '</option>';
+        var doLoad = function(id, action) {
+            var url = './merchant-brand/get';
+            var params = {id: id};
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    if(data.error == 0) {
+                        EditModal.show(action, data);
                     }
-                } else if (val.type == 2) {
-                    /*pc端*/
-                    if (boo2 && obj2Id == val.id ) {
-                        src2 = val.smallImage;
-                        boo2 = false;
-                        innerhtml2 += '<option value="' + val.code + '" selected>' + val.code + '</option>';
-                    }else if (boo2 && !obj2Id){
-                        src2 = val.smallImage;
-                        boo2 = false;
-                        innerhtml2 += '<option value="' + val.code + '" selected>' + val.code + '</option>';
-                    }else {
-                        innerhtml2 += '<option value="' + val.code + '" >' + val.code + '</option>';
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('操作失败！' + data.message, '操作提示');
                     }
                 }
             });
-            $(obj1).html(innerhtml1);
-            $(obj2).html(innerhtml2);
-            $(obj1).next().next().attr("src", src1+"?"+randomNum());
-            $(obj2).next().next().attr("src", src2+"?"+randomNum());
-
         }
-    });
-}
 
-function showTempIMG(obj) {
-    var code = $(obj.options[obj.selectedIndex]).val();
+        var updateStatus = function(id, status) {
+            var params = {id: id, status: status};
+            var url = './merchant-brand/modify-type';
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    if(data.error == 0) {
+                        reload();
+                        toastr['success']('操作成功', '操作提示');
+                    }
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('操作失败！' + data.message, '操作提示');
+                    }
+                }
+            });
+        }
+
+        tableList.find('[data-command="search"]').unbind('click').click(function() {
+            init();
+        });
+        tableList.find('[data-command="add"]').unbind('click').click(function() {
+            AddModal.show();
+        });
+        var init = function() {
+            pagination.init();
+        };
+        var reload = function() {
+            pagination.reload();
+        };
+        return {
+            init: init,
+            reload: reload
+        }
+    }();
+
+    var EditModal = function() {
+        var modal = $('#modal-edit');
+        var form = modal.find('form');
+        var initForm = function() {
+            form.validate({
+                rules: {
+                    name: {
+                        required: true,
+                        minlength: 4,
+                        maxlength: 20
+                    },
+                    code: {required: true}
+                },
+                messages: {
+                    name: {
+                        required: '品牌名称不能为空！',
+                        minlength: '至少输入{0}个字符',
+                        maxlength: '最多输入{0}个字符'
+                    },
+                    code: {
+                        required: '品牌名称不能为空！'
+                    }
+                },
+                invalidHandler: function (event, validator) {},
+                errorPlacement: function (error, element) {
+                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-warning"></i> ' + error.text());
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
+                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-check"></i> 填写正确。');
+                }
+            });
+            modal.find('[data-command="submit"]').unbind('click').click(function() {
+                if(form.validate().form()) {
+                    doSubmit();
+                }
+            });
+        }
+        var isSending = false;
+        var doSubmit = function() {
+            if(isSending) return;
+            var action = modal.attr('data-action');
+            var params = {};
+            var url = './merchant-brand/update';
+            var id = modal.attr('data-id');
+            var merchantCode = form.find('select[name="merchantCode"]').find("option:selected").val();
+            var name = form.find('input[name="name"]').val();
+            var code = form.find('input[name="code"]').val();
+            var status = form.find('input[name="status"]:checked').val();
+            var template = form.find('select[name="template"]').find("option:selected").val();
+            var mtemplate = form.find('select[name="mtemplate"]').find("option:selected").val();
+
+            params = {id: id, merchantId: merchantCode,name:name, code: code, templete: template,mtemplete:mtemplate, status: status};
+            isSending = true;
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    isSending = false;
+                    if(data.error == 0) {
+                        modal.modal('hide');
+                        tables.init();
+                        toastr['success']('修改成功！', '操作提示');
+                    }
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('修改失败！' + data.message, '操作提示');
+                    }
+                }
+            });
+        };
+        var loadMarchant = function(code) {
+            var url = './merchant/getlist';
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : {},
+                dataType : 'json',
+                success : function(data) {
+                    marchantList(data,code);
+                }
+            });
+        }
+        var marchantList = function (data, code) {
+            var marchant = form.find('select[name="merchantCode"]');
+            marchant.empty();
+            $.each(data, function(idx, val) {
+                if (val.code == code)
+                    marchant.append('<option value="' + val.id + '" selected>' + val.code + '</option>');
+                else
+                    marchant.append('<option value="' + val.id + '">' + val.code + '</option>');
+            });
+        }
+
+        var loadTemplateImg = function (tempId,mtempId) {
+            var url = './site-template/list';
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : {},
+                dataType : 'json',
+                success : function(data) {
+                    templateList(tempId,mtempId,data);
+                }
+            });
+        }
+        var templateList = function (tempId,mtempId,data) {
+            var selt1 = modal.find('select[name="template"]');
+            var selt2 = modal.find('select[name="mtemplate"]');
+            selt1.empty();
+            selt2.empty();
+            $.each(data, function(idx, val) {
+                if (val.type == 1){
+                    if (val.id == tempId){
+                        selt1.append('<option value="' + val.code + '" selected>' + val.code + '</option>');
+                        selt1.next().attr("src",(val.smallImage+"?"+Math.random()).toString())
+                    }
+                    else{
+                        selt1.append('<option value="' + val.code + '">' + val.code + '</option>');
+                    }
+                }
+
+                if (val.type == 2) {
+                    if (val.id == mtempId){
+                        selt2.append('<option value="' + val.code + '" selected>' + val.code + '</option>');
+                        selt2.next().attr("src",(val.smallImage+"?"+Math.random()).toString())
+                    }
+                    else{
+                        selt2.append('<option value="' + val.code + '">' + val.code + '</option>');
+                    }
+                }
+
+            });
+        }
+
+        var show = function(action, data) {
+            form[0].reset();
+            modal.attr('data-action', 'edit');
+            modal.find('.modal-title').html('修改品牌');
+            modal.attr('data-id', data.bean.id);
+            form.find('input[name="name"]').val(data.bean.name);
+            form.find('input[name="code"]').val(data.bean.code);
+            form.find('input[name="status"][value="' + data.bean.status + '"]').attr('checked', true);
+
+            loadMarchant(data.bean.merchantCode);
+            loadTemplateImg(data.bean.templete.id,data.bean.mtemplete.id);
+
+
+
+
+            Metronic.initAjax();
+            form.find('.help-inline').empty();
+            form.find('.has-error').removeClass('has-error');
+            form.find('.has-success').removeClass('has-success');
+            modal.modal('show');
+        };
+
+        var init = function() {
+            initForm();
+        };
+
+        return {
+            init: init,
+            show: show
+        }
+
+    }();
+    var AddModal = function() {
+        var modal = $('#modal-add');
+        var form = $('form:last');
+
+        var initForm = function() {
+            form.validate({
+                rules: {
+                    name: {
+                        required: true,
+                        minlength: 4,
+                        maxlength: 20
+                    },
+                    code: {
+                        required: true,
+                        minlength: 4,
+                        maxlength: 10,
+                        remote: {
+                            url: '/merchant-brand/notexists',
+                            type: 'post'
+                        }
+                    }
+                },
+                messages: {
+                    name: {
+                        required: '品牌名称不能为空！',
+                        minlength: '至少输入{0}个字符',
+                        maxlength: '最多输入{0}个字符'
+                    },
+                    code: {
+                        required: '品牌代号不能为空！',
+                        minlength: '至少输入{0}个字符',
+                        maxlength: '最多输入{0}个字符',
+                        remote: '品牌代号已存在！'
+                    }
+                },
+                invalidHandler: function (event, validator) {},
+                errorPlacement: function (error, element) {
+                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-warning"></i> ' + error.text());
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
+                    $(element).closest('.form-group').find('.help-inline').html('<i class="fa fa-check"></i> 填写正确。');
+                }
+            });
+            modal.find('[data-command="submit"]').unbind('click').click(function() {
+                if(form.validate().form()) {
+                    doSubmit();
+                }
+            });
+        };
+
+        var isSending = false;
+        var doSubmit = function() {
+            if(isSending) return;
+            var action = modal.attr('data-action');
+            var params = {};
+            var url = './merchant-brand/add';
+
+            var merchantCode = form.find('select[name="merchantCode"]').find("option:selected").val();
+            var name = form.find('input[name="name"]').val();
+            var code = form.find('input[name="code"]').val();
+            var status = form.find('input[name="status"]:checked').val();
+            var template = form.find('select[name="template"]').find("option:selected").val();
+            var mtemplate = form.find('select[name="mtemplate"]').find("option:selected").val();
+            params = {merchantCode:merchantCode,name:name,code:code,status:status,templete:template,mtemplete:mtemplate};
+            isSending = true;
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : params,
+                dataType : 'json',
+                success : function(data) {
+                    isSending = false;
+                    if(data.error == 0) {
+                        modal.modal('hide');
+                        tables.init();
+                        toastr['success']('添加完成！', '操作提示');
+                    }
+                    if(data.error == 1 || data.error == 2) {
+                        toastr['error']('添加失败！' + data.message, '操作提示');
+                    }
+                }
+            });
+        }
+        var loadMarchant = function() {
+            var url = './merchant/getlist';
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : {},
+                dataType : 'json',
+                success : function(data) {
+                    marchantList(data);
+                }
+            });
+        }
+        var marchantList = function (data) {
+            var marchant = form.find('select[name="merchantCode"]');
+            marchant.empty();
+            $.each(data, function(idx, val) {
+                if (idx == 0)
+                    marchant.append('<option value="' + val.id + '" selected>' + val.code + '</option>');
+                else
+                    marchant.append('<option value="' + val.id + '">' + val.code + '</option>');
+            });
+        }
+
+        var loadTemplateImg = function (select,type) {
+            var url = './site-template/list';
+            $.ajax({
+                type : 'post',
+                url : url,
+                data : {},
+                dataType : 'json',
+                success : function(data) {
+                    templateList(data,select,type);
+                }
+            });
+        }
+        var templateList = function (data,select,type) {
+            var sel = $(select);
+            sel.empty();
+            var boo1 = true;
+            var boo2 = true;
+            $.each(data, function(idx, val) {
+                if (val.type == type && type ==1 && boo1 ) {
+                    boo1 = false;
+                    sel.append('<option value="' + val.code + '" selected>' + val.code + '</option>');
+                    sel.next().attr("src", (val.smallImage+"?"+Math.random()).toString());
+                }else if(val.type == type && type ==1){
+                    sel.append('<option value="' + val.code + '">' + val.code + '</option>');
+                } else if (val.type == type && type ==2 && boo2 ) {
+                    boo2 = false;
+                    sel.append('<option value="' + val.code + '" selected>' + val.code + '</option>');
+                    sel.next().attr("src", (val.smallImage+"?"+Math.random()).toString());
+                }else if (val.type == type && type == 2) {
+                    sel.append('<option value="' + val.code + '">' + val.code + '</option>')
+                }
+
+            });
+        }
+
+        var show = function() {
+            form[0].reset();
+            modal.attr('data-action', 'add');
+            modal.removeAttr('data-id');
+            modal.find('.modal-title').html('添加品牌');
+
+            loadMarchant();
+            loadTemplateImg(form.find('select[name="template"]'),1);
+            loadTemplateImg(form.find('select[name="mtemplate"]'),2);
+
+            Metronic.initAjax();
+
+            form.find('.help-inline').empty();
+            form.find('.has-error').removeClass('has-error');
+            form.find('.has-success').removeClass('has-success');
+            modal.modal('show');
+        }
+
+        var init = function() {
+            initForm();
+        }
+
+        return {
+            init: init,
+            show: show
+        }
+
+    }();
+
+
+    return {
+        init: function() {
+            tables.init();
+            EditModal.init();
+            AddModal.init();
+        }
+    }
+}();
+
+function showTempIMG(selt) {
+    var code = $(selt).find("option:selected").val();
     $.ajax({
         type: 'post',
         url: '/site-template/getbycode',
         data: 'code=' + code,
         dataType: "json",
         success: function (data) {
-            $(obj).next().next().attr("src", data.smallImage+"?"+randomNum());
+            $(selt).next().attr("src", data.smallImage+"?"+Math.random());
         }
     })
-}
-
-function findMerchant(obj, code) {
-    $.ajax({
-        type: 'post',
-        url: '/merchant/getlist',
-        data: '',
-        dataType: "json",
-        success: function (data) {
-            var innerhtml = '';
-            if (data.length != 0) {
-                $.each(data, function (idx, val) {
-                    if (val.code == code)
-                        innerhtml += '<option value="' + val.id + '" selected>' + val.code + '</option>';
-                    else
-                        innerhtml += '<option value=' + val.id + ' >' + val.code + '</option>';
-                })
-            } else {
-                innerhtml = '<option value="0" >无商户信息</option>';
-            }
-            ;
-
-            $(obj).html(innerhtml);
-        }
-    })
-}
-
-function randomNum() {
-    //x上限，y下限
-    var x = 1000000;
-    var y = 0;
-    var rand = parseInt(Math.random() * (x - y + 1) + y);
-    return rand;
-}
+};

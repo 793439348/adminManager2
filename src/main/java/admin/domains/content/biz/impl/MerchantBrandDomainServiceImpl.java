@@ -55,6 +55,16 @@ public class MerchantBrandDomainServiceImpl implements MerchantBrandDomainServic
 
     @Override
     public PageList search(Integer brand, String domain, Integer page, Integer pageSize) {
+        if ( page == null || page < 0 ) {
+            page = 0;
+        }
+        if (pageSize == null || pageSize < 0 ) {
+            pageSize = 10;
+        }
+        if (pageSize > 100) {
+            pageSize = 100;
+        }
+
         final List<Criterion> criterions = new ArrayList<Criterion>();
         final List<Order> orders = new ArrayList<Order>();
 

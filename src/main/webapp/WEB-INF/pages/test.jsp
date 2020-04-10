@@ -41,10 +41,10 @@
     <div class="page-content-wrapper">
         <div class="page-content">
             <!-- BEGIN PAGE HEADER-->
-            <h3 class="page-title">测试</h3>
+            <h3 class="page-title">商户管理</h3>
             <div class="page-bar">
                 <ul class="page-breadcrumb">
-                    <li>当前位置：测试<i class="fa fa-angle-right"></i></li><li>银行卡信息</li>
+                    <li>当前位置：商户管理<i class="fa fa-angle-right"></i></li><li>商户列表</li>
                 </ul>
             </div>
 
@@ -57,92 +57,50 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal"></button>
-                                    <h4 class="modal-title">编辑商户信息</h4>
+                                    <h4 class="modal-title"></h4>
                                 </div>
                                 <div class="modal-body" style="padding: 30px 20px 15px 20px;">
                                     <form class="form-horizontal">
                                         <div class="form-body">
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">商户别名</label>
+                                                <label class="col-md-3 control-label">模板编码</label>
                                                 <div class="col-md-9">
-                                                    <input name="nickname" class="form-control input-inline input-medium" type="text">
+                                                    <input name="code" class="form-control input-inline input-medium" type="text">
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">商户Id</label>
+                                                <label class="col-md-3 control-label">模板名称</label>
                                                 <div class="col-md-9">
-                                                    <input name="code" class="form-control input-inline input-medium" type="text" >
+                                                    <input name="name" class="form-control input-inline input-medium" type="text" >
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">商户账号</label>
-                                                <div class="col-md-9">
-                                                    <input name="account" class="form-control input-inline input-medium" type="text">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">状态</label>
+                                                <label class="col-md-3 control-label">类型</label>
                                                 <div class="col-md-9">
                                                     <div class="radio-list">
-                                                        <input type="radio" name="status" value="1">启用
-                                                        <input type="radio" name="status" value="2">停用
-                                                        <input type="radio" name="status" value="3">关闭
-                                                        <input type="radio" name="status" value="4">维护
+                                                        <input type="radio" name="type" value="1" checked> 手机端
+                                                        <input type="radio" name="type" value="2"> PC端
                                                     </div>
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">角色</label>
+                                                <label class="col-md-3 control-label">缩略图</label>
                                                 <div class="col-md-9">
-                                                    <select name="roleId" class="form-control input-medium">
-                                                        <option value="1">超级管理员</option>
-                                                        <option value="2">运营主管</option>
-                                                        <option value="3">客服专员</option>
-                                                        <option value="4">财务组长</option>
-                                                        <option value="5">普通客服</option>
-                                                        <option value="6">充值专员</option>
-                                                        <option value="7">打款专员</option>
-                                                        <option value="9">客服组长</option>
-                                                        <option value="10">风控专员</option>
-                                                        <option value="11">风控组长</option>
-                                                        <option value="12">审计组长</option>
-                                                        <option value="13">审计专员</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">手机</label>
-                                                <div class="col-md-9">
-                                                    <input name="phone" class="form-control input-inline input-medium" type="text">
+                                                    <input name="smallImage" class="form-control input-inline input-medium" type="file" multiple>
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">邮箱</label>
+                                                <label class="col-md-3 control-label">预览图</label>
                                                 <div class="col-md-9">
-                                                    <input name="email" class="form-control input-inline input-medium" type="text">
+                                                    <input name="bigImage" class="form-control input-inline input-medium" type="file" multiple>
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">qq</label>
-                                                <div class="col-md-9">
-                                                    <input name="qq" class="form-control input-inline input-medium" type="text">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">微信</label>
-                                                <div class="col-md-9">
-                                                    <input name="wechat" class="form-control input-inline input-medium" type="text">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
+
                                         </div>
                                     </form>
                                 </div>
@@ -161,28 +119,19 @@
                                 <div class="form-inline">
                                     <div class="row">
                                         <div class="col-md-12">
-
                                             <div class="form-group">
                                                 <div class="input-group input-medium">
-                                                    <span class="input-group-addon no-bg fixed">商户账号</span>
-                                                    <input name="merchant-name" class="form-control" type="text">
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="input-group input-medium">
-                                                    <span class="input-group-addon no-bg fixed">商户ID</span>
+                                                    <span class="input-group-addon no-bg fixed">模板名称</span>
                                                     <input name="merchant-id" class="form-control" type="text">
                                                 </div>
                                             </div>
                                             <div class="form-group">
                                                 <div class="input-group">
-                                                    <span class="input-group-addon no-bg fixed">状态</span>
+                                                    <span class="input-group-addon no-bg fixed">类型</span>
                                                     <select name="type" class="form-control">
                                                         <option value="">全部</option>
-                                                        <option value="1">启用</option>
-                                                        <option value="2">停用</option>
-                                                        <option value="3">关闭</option>
-                                                        <option value="4">维护</option>
+                                                        <option value="1">手机端</option>
+                                                        <option value="2">PC端</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -203,14 +152,11 @@
                                     <thead>
                                     <tr class="align-center">
                                         <th width="8%">ID</th>
-                                        <th width="10%">商户别名</th>
-                                        <th width="10%">商户ID</th>
-                                        <th>账号</th>
-                                        <th width="8%">线路费余额</th>
-                                        <th width="16%">状态</th>
-                                        <th width="8%">会员数</th>
-                                        <th width="12%">创建时间</th>
-                                        <th class="three">登入时间</th>
+                                        <th width="10%">模板编码</th>
+                                        <th width="10%">模板名称</th>
+                                        <th width="10%">模板类型</th>
+                                        <th >缩略图</th>
+                                        <th >预览图</th>
                                         <th class="three">操作</th>
                                     </tr>
                                     </thead>
@@ -234,101 +180,44 @@
                                     <form class="form-horizontal">
                                         <div class="form-body">
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">商户别名</label>
+                                                <label class="col-md-3 control-label">模板编码</label>
                                                 <div class="col-md-9">
-                                                    <input name="nickname" class="form-control input-inline input-medium" type="text">
+                                                    <input name="code" class="form-control input-inline input-medium" type="text">
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">商户Id</label>
+                                                <label class="col-md-3 control-label">模板名称</label>
                                                 <div class="col-md-9">
-                                                    <input name="code" class="form-control input-inline input-medium" type="text" >
+                                                    <input name="name" class="form-control input-inline input-medium" type="text" >
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">商户账号</label>
-                                                <div class="col-md-9">
-                                                    <input name="account" class="form-control input-inline input-medium" type="text">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">密码</label>
-                                                <div class="col-md-9">
-                                                    <input name="pwd1" class="form-control input-inline input-medium" type="password">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">确认密码</label>
-                                                <div class="col-md-9">
-                                                    <input name="pwd2" class="form-control input-inline input-medium" type="password">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">状态</label>
+                                                <label class="col-md-3 control-label">类型</label>
                                                 <div class="col-md-9">
                                                     <div class="radio-list">
-                                                        <input type="radio" name="status" value="1" checked>启用
-                                                        <input type="radio" name="status" value="2">停用
-                                                        <input type="radio" name="status" value="3">关闭
-                                                        <input type="radio" name="status" value="4">维护
+                                                        <input type="radio" name="type" value="1" checked> 手机端
+                                                        <input type="radio" name="type" value="2"> PC端
                                                     </div>
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">角色</label>
+                                                <label class="col-md-3 control-label">缩略图</label>
                                                 <div class="col-md-9">
-                                                    <select name="roleId" class="form-control input-medium" aria-invalid="false">
-                                                        <option value="1">超级管理员</option>
-                                                        <option value="2">运营主管</option>
-                                                        <option value="3">客服专员</option>
-                                                        <option value="4">财务组长</option>
-                                                        <option value="5">普通客服</option>
-                                                        <option value="6">充值专员</option>
-                                                        <option value="7">打款专员</option>
-                                                        <option value="9">客服组长</option>
-                                                        <option value="10">风控专员</option>
-                                                        <option value="11">风控组长</option>
-                                                        <option value="12">审计组长</option>
-                                                        <option value="13">审计专员</option>
-                                                    </select>
+                                                    <input name="smallImage" class="form-control input-inline input-medium" type="file" multiple required>
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-md-3 control-label">手机</label>
+                                                <label class="col-md-3 control-label">预览图</label>
                                                 <div class="col-md-9">
-                                                    <input name="phone" class="form-control input-inline input-medium" type="text">
+                                                    <input name="bigImage" class="form-control input-inline input-medium" type="file" multiple required>
                                                     <span class="help-inline"></span>
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">邮箱</label>
-                                                <div class="col-md-9">
-                                                    <input name="email" class="form-control input-inline input-medium" type="text">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">qq</label>
-                                                <div class="col-md-9">
-                                                    <input name="qq" class="form-control input-inline input-medium" type="text">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-md-3 control-label">微信</label>
-                                                <div class="col-md-9">
-                                                    <input name="wechat" class="form-control input-inline input-medium" type="text">
-                                                    <span class="help-inline"></span>
-                                                </div>
-                                            </div>
+
                                         </div>
                                     </form>
                                 </div>

@@ -4,16 +4,15 @@ var test = function() {
         var tableList = $('#table-list');
         var tablePagelist = tableList.find('.page-list');
         var getSearchParams = function() {
-            var username = tableList.find('input[name="merchant-name"]').val();
-            var keyword = tableList.find('input[name="merchant-id"]').val();
-            var status = tableList.find('select[name="type"]').val();
-            return {name: username, code: keyword, status: status};
+            var name = tablePagelist.find('input[name="name"]').val();
+            var type = tableList.find('select[name="type"]').val();
+            return {name: name, type:type};
         };
         var pagination = $.pagination({
             render: tablePagelist,
             pageSize: 5,
             ajaxType: 'post',
-            ajaxUrl: './merchant/list',
+            ajaxUrl: './site-template/search',
             ajaxData: getSearchParams,
             beforeSend: function() {
             },
@@ -23,50 +22,23 @@ var test = function() {
                 var table = tableList.find('table > tbody').empty();
                 var innerHtml = '';
                 $.each(list, function(idx, val) {
-                    var statusAction = '';
-                    if (val.status == 1) {
-                        statusAction = '<form>' +
-                            '<input type="radio" name="m-type" value="1" checked>启用' +
-                            '<input type="radio" name="m-type" value="2">停用' +
-                            '<input type="radio" name="m-type" value="3">关闭' +
-                            '<input type="radio" name="m-type" value="4">维护' +
-                            '</form>';
-                    } else if (val.status == 2) {
-                        statusAction = '<form>' +
-                            '<input type="radio" name="m-type" value="1" >启用' +
-                            '<input type="radio" name="m-type" value="2" checked>停用' +
-                            '<input type="radio" name="m-type" value="3">关闭' +
-                            '<input type="radio" name="m-type" value="4">维护' +
-                            '</form>';
-                    } else if (val.status == 3) {
-                        statusAction = '<form>' +
-                            '<input type="radio" name="m-type" value="1" >启用' +
-                            '<input type="radio" name="m-type" value="2">停用' +
-                            '<input type="radio" name="m-type" value="3" checked>关闭' +
-                            '<input type="radio" name="m-type" value="4">维护' +
-                            '</form>';
-                    } else if (val.status == 4) {
-                        statusAction = '<form>' +
-                            '<input type="radio" name="m-type" value="1" >启用' +
-                            '<input type="radio" name="m-type" value="2">停用' +
-                            '<input type="radio" name="m-type" value="3">关闭' +
-                            '<input type="radio" name="m-type" value="4" checked>维护' +
-                            '</form>';
-                    }
+                    var typeName = '';
+                    if (val.type == 1) {
+                        typeName = '移动端';
+                    }else if (val.type == 2)
+                        typeName = 'PC端';
                     innerHtml +=
-                        '<tr class="align-center" data-id="' + val.id + '">'+
+                        '<tr class="align-center" data-id="' + val.id + '">' +
                         '<td>' + val.id + '</td>' +
-                        '<td>' + val.nickname + '</td>' +
                         '<td>' + val.code + '</td>' +
                         '<td>' + val.name + '</td>' +
-                        '<td>' + val.balance + '</td>' +
-                        '<td>' + statusAction + '</td>' +
-                        '<td>' + val.userNumber + '</td>' +
-                        '<td>' + val.createTime + '</td>' +
-                        '<td>' + val.loginTime + '</td>' +
+                        '<td>' + typeName + '</td>' +
+                        '<td>' + '<img src="'+val.smallImage+"?"+Math.random() +'" alt="缩略图" width="40" height="40">' + '</td>' +
+                        '<td>' + '<img src="'+ val.bigImage+"?"+Math.random() +'" alt="预览图" width="40" height="40">' + '</td>' +
                         '<td>' +
                         '<a data-command="edit" href="javascript:;" class="btn default btn-xs black"><i class="fa fa-edit"></i> 修改 </a>' +
-                        '</td>'+
+                        '<a data-command="dele" href="javascript:;" class="btn default btn-xs black"><i class="fa fa-edit"></i> 删除 </a>' +
+                        '</td>' +
                         '</tr>';
                 });
                 table.html(innerHtml);
@@ -74,31 +46,9 @@ var test = function() {
                     var id = $(this).parents('tr').attr('data-id');
                     doLoad(id, 'edit');
                 });
-                $("input[name=m-type]").click(function(){
-
-                    var id = $(this).parents('tr').attr('data-id');
-                    var status = $(this).val();
-                    var msg = '确定要修改状态？';
-                    bootbox.dialog({
-                        message: msg,
-                        title: '提示消息',
-                        buttons: {
-                            success: {
-                                label: '<i class="fa fa-check"></i> 确定',
-                                className: 'green-meadow',
-                                callback: function() {
-                                    updateStatus(id, status);
-                                }
-                            },
-                            danger: {
-                                label: '<i class="fa fa-undo"></i> 取消',
-                                className: 'btn-danger',
-                                callback: function() {}
-                            }
-                        }
-                    });
+                table.find('[data-command="dele"]').unbind('click').click(function() {
+                    alert("dele")
                 });
-
             },
             pageError: function(response) {
                 bootbox.dialog({
@@ -120,7 +70,7 @@ var test = function() {
         });
 
         var doLoad = function(id, action) {
-            var url = './merchant/get';
+            var url = './site-template/get';
             var params = {id: id};
             $.ajax({
                 type : 'post',
@@ -130,26 +80,6 @@ var test = function() {
                 success : function(data) {
                     if(data.error == 0) {
                         EditModal.show(action, data);
-                    }
-                    if(data.error == 1 || data.error == 2) {
-                        toastr['error']('操作失败！' + data.message, '操作提示');
-                    }
-                }
-            });
-        }
-
-        var updateStatus = function(id, status) {
-            var params = {id: id, status: status};
-            var url = './merchant/modify-type';
-            $.ajax({
-                type : 'post',
-                url : url,
-                data : params,
-                dataType : 'json',
-                success : function(data) {
-                    if(data.error == 0) {
-                        reload();
-                        toastr['success']('操作成功', '操作提示');
                     }
                     if(data.error == 1 || data.error == 2) {
                         toastr['error']('操作失败！' + data.message, '操作提示');
@@ -183,59 +113,19 @@ var test = function() {
         var initForm = function() {
             form.validate({
                 rules: {
-                    nickname: {
+                    code: {
                         required: true
                     },
-                    code: {
-                        required: true,
-                        minlength: 4,
-                        maxlength: 4,
-                        isInegal: true
-                    },
-                    account: {
-                        required: true,
-                        isInegal: true
-                    },
-                    phone: {
-                        required: true,
-                        isPhone: true
-                    },
-                    email:{
-                        required: true,
-                        isEmail: true
-                    },
-                    qq:{
-                        required: true,
-                        isQQ: true
-                    },
-                    wechat:{
-                        required: true,
-                        isWechat: true
+                    name: {
+                        required: true
                     }
                 },
                 messages: {
-                    nickname: {
-                        required: '商户别名不能为空！'
-                    },
                     code: {
-                        required: '商户Id不能为空！',
-                        minlength: '至少输入{0}个字符',
-                        maxlength: '最多输入{0}个字符'
+                        required: "模板编码不能为空"
                     },
-                    account: {
-                        required: '商户账号不能为空！'
-                    },
-                    phone: {
-                        required: '手机号不能为空！'
-                    },
-                    email: {
-                        required: '邮箱不能为空！'
-                    },
-                    qq: {
-                        required: '手机号不能为空！'
-                    },
-                    wechat: {
-                        required: '微信号不能为空！'
+                    name: {
+                        required: "模板名称不能为空"
                     }
                 },
                 invalidHandler: function (event, validator) {},
@@ -261,25 +151,27 @@ var test = function() {
         var doSubmit = function() {
             if(isSending) return;
             var action = modal.attr('data-action');
-            var params = {};
-            var url = './merchant/update';
+            var url = './site-template/update';
+            var formData = new FormData();
             var id = modal.attr('data-id');
-            var nickname = form.find('input[name="nickname"]').val();
+            var name = form.find('input[name="name"]').val();
             var code = form.find('input[name="code"]').val();
-            var account = form.find('input[name="account"]').val();
-            var status = form.find('input[name="status"]:checked').val();
-            var roleId = form.find('select[name="roleId"]').find("option:selected").val();
-            var phone = form.find('input[name="phone"]').val();
-            var email = form.find('input[name="email"]').val();
-            var qq = form.find('input[name="qq"]').val();
-            var wechat = form.find('input[name="wechat"]').val();
-            params = {id: id, nickname: nickname, code: code, account: account, status: status,roleId:roleId,phone:phone,email:email,qq:qq,wechat:wechat};
+            var type = form.find('input[name="type"]:checked').val();
+            var smallImage = form.find('input[name="smallImage"]').prop("files")[0];
+            var bigImage = form.find('input[name="bigImage"]').prop("files")[0];
+            formData.append("id",id);
+            formData.append("code",code);
+            formData.append("name",name);
+            formData.append("type",type);
+            formData.append("smallImage", smallImage);
+            formData.append("bigImage", bigImage);
             isSending = true;
             $.ajax({
                 type : 'post',
                 url : url,
-                data : params,
-                dataType : 'json',
+                data : formData,
+                processData:false,
+                contentType: false,
                 success : function(data) {
                     isSending = false;
                     if(data.error == 0) {
@@ -297,19 +189,12 @@ var test = function() {
         var show = function(action, data) {
             form[0].reset();
             modal.attr('data-action', 'edit');
-            modal.find('.modal-title').html('修改商户');
+            modal.find('.modal-title').html('修改模板');
             modal.attr('data-id', data.bean.id);
-            form.find('input[name="nickname"]').val(data.bean.nickname);
-            form.find('input[name="code"]').val(data.bean.code);
-            form.find('input[name="account"]').val(data.bean.account);
-            form.find('input[name="nickname"]').val(data.bean.nickname);
-            form.find('input[name="status"][value="' + data.bean.status + '"]').attr('checked', true);
-            form.find('select[name="roleId"]').find('option[value="' + data.bean.roleId + '"]').attr('selected', true);
-            form.find('input[name="phone"]').val(data.bean.phone);
-            form.find('input[name="email"]').val(data.bean.email);
-            form.find('input[name="qq"]').val(data.bean.qq);
-            form.find('input[name="wechat"]').val(data.bean.wechat);
 
+            form.find('input[name="code"]').val(data.bean.code);
+            form.find('input[name="name"]').val(data.bean.name);
+            form.find('input[name="type"][value="' + data.bean.type + '"]').attr('checked', true);
 
             Metronic.initAjax();
             form.find('.help-inline').empty();
@@ -331,116 +216,33 @@ var test = function() {
     var AddModal = function() {
         var modal = $('#modal-add');
         var form = $('form:last');
-        // 手机号码验证
-        jQuery.validator.addMethod("isPhone", function(value, element) {
-            var length = value.length;
-            return this.optional(element) || (length == 11 && /^[1][3,4,5,7,8][0-9]{9}$/.test(value));
-        }, "请正确填写您的手机号码。");
-        // 邮箱验证
-        jQuery.validator.addMethod("isEmail",function (val, element) {
-            return this.optional(element) || (/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$/.test(val));
-        },"请填写正确的邮箱。");
-        // qq验证
-        jQuery.validator.addMethod("isQQ",function (val, element) {
-            return this.optional(element) || (/[1-9][0-9]{4,14}/.test(val));
-        },"请填写正确的QQ号码。");
-        // 微信验证
-        jQuery.validator.addMethod("isWechat",function (val, element) {
-            return this.optional(element) || (/^[a-zA-Z\d_]{5,}$/.test(val));
-        },"请填写正确的微信号。");
-        // 非法字符
-        jQuery.validator.addMethod("isInegal",function (val, element) {
-            return this.optional(element) || (/^[0-9a-zA-Z_]{1,}$/.test(val));
-        },"包含非法字符，只能使用字母、数字、下划线。");
+
         var initForm = function() {
             form.validate({
                 rules: {
-                    nickname: {
+                    code: {
+                        required: true,
+                        remote: {
+                            url: '/site-template/existCode',
+                            type: 'post'
+                        }
+                    },
+                    name: {
                         required: true
                     },
-                    code: {
-                        required: true,
-                        minlength: 4,
-                        maxlength: 4,
-                        remote: {
-                            url: '/merchant/exists',
-                            type: 'post'
-                        },
-                        isInegal: true
-                    },
-                    account: {
-                        required: true,
-                        remote: {
-                            url: '/merchant/exists',
-                            type: 'post'
-                        },
-                        isInegal: true
-                    },
-                    pwd1: {
-                        required: true,
-                        minlength: 6,
-                        maxlength: 20
-                    },
-                    pwd2: {
-                        required: true,
-                        minlength: 6,
-                        maxlength: 20,
-                        equalTo: 'input[name="pwd1"]'
-                    },
-                    phone: {
-                        required: true,
-                        isPhone: true
-                    },
-                    email:{
-                        required: true,
-                        isEmail: true
-                    },
-                    qq:{
-                        required: true,
-                        isQQ: true
-                    },
-                    wechat:{
-                        required: true,
-                        isWechat: true
-                    }
+                    smallImage: {required: true},
+                    bigImage: {required: true}
                 },
                 messages: {
-                    nickname: {
-                        required: '商户别名不能为空！'
-                    },
                     code: {
-                        required: '商户Id不能为空！',
-                        minlength: '至少输入{0}个字符',
-                        maxlength: '最多输入{0}个字符',
+                        required: "模板编码不能为空",
                         remote: '商户Id已存在！'
                     },
-                    account: {
-                        required: '商户账号不能为空！',
-                        remote: '商户账号已存在！'
+                    name: {
+                        required: "模板名称不能为空"
                     },
-                    pwd1: {
-                        required: '密码不能为空！',
-                        minlength: '至少输入{0}个字符',
-                        maxlength: '最多输入{0}个字符'
-                    },
-                    pwd2: {
-                        required: '确认密码不能为空！',
-                        equalTo: '两次密码不一致！',
-                        minlength: '至少输入{0}个字符',
-                        maxlength: '最多输入{0}个字符'
-                    },
-                    phone: {
-                        required: '手机号不能为空！'
-                    },
-                    email: {
-                        required: '邮箱不能为空！'
-                    },
-                    qq: {
-                        required: '手机号不能为空！'
-                    },
-                    wechat: {
-                        required: '微信号不能为空！'
-                    }
+                    smallImage: {required: "缩略图不能为空"},
+                    bigImage: {required: "预览图不能为空"}
                 },
                 invalidHandler: function (event, validator) {},
                 errorPlacement: function (error, element) {
@@ -465,27 +267,25 @@ var test = function() {
         var doSubmit = function() {
             if(isSending) return;
             var action = modal.attr('data-action');
-            var params = {};
-            var url = './merchant/add';
-
-            var nickname = form.find('input[name="nickname"]').val();
+            var url = './site-template/add';
+            var name = form.find('input[name="name"]').val();
             var code = form.find('input[name="code"]').val();
-            var account = form.find('input[name="account"]').val();
-            var pwd1 = form.find('input[name="pwd1"]').val();
-            var pwd2 = form.find('input[name="pwd2"]').val();
-            var status = form.find('input[name="status"]:checked').val();
-            var role_id = form.find('select[name="roleId"]').find("option:selected").val();
-            var phone = form.find('input[name="phone"]').val();
-            var email = form.find('input[name="email"]').val();
-            var qq = form.find('input[name="qq"]').val();
-            var wechat = form.find('input[name="wechat"]').val();
-            params = { nickname: nickname, code: code, account: account,pwd1:pwd1, status: status,role_id:role_id,phone:phone,email:email,qq:qq,wechat:wechat};
+            var type = form.find('input[name="type"]:checked').val();
+            var smallImage = form.find('input[name="smallImage"]').prop("files")[0];
+            var bigImage = form.find('input[name="bigImage"]').prop("files")[0];
+            var formData = new FormData();
+            formData.append("code",code);
+            formData.append("name",name);
+            formData.append("type",type);
+            formData.append("smallImage", smallImage);
+            formData.append("bigImage", bigImage);
             isSending = true;
             $.ajax({
                 type : 'post',
                 url : url,
-                data : params,
-                dataType : 'json',
+                data : formData,
+                processData:false,
+                contentType: false,
                 success : function(data) {
                     isSending = false;
                     if(data.error == 0) {
@@ -504,7 +304,7 @@ var test = function() {
             form[0].reset();
             modal.attr('data-action', 'add');
             modal.removeAttr('data-id');
-            modal.find('.modal-title').html('添加商户');
+            modal.find('.modal-title').html('添加模板');
 
             Metronic.initAjax();
 
@@ -524,7 +324,6 @@ var test = function() {
         }
 
     }();
-
 
     return {
         init: function() {

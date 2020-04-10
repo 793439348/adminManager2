@@ -151,9 +151,32 @@ public class MerchantBrandDomainController extends AbstractActionController {
     @ResponseBody
     @RequestMapping(value = "/merchant-brand-domain/get", method = RequestMethod.POST)
     public void MERCHANT_BRAND_DOMAIN_GET(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
+
+
+        final String actionKey = "/merchant-brand-domain/get";
+        final long t1 = System.currentTimeMillis();
+        final WebJSONObject json = new WebJSONObject(super.getAdminDataFactory());
+        final AdminUser uEntity = super.getCurrUser(session, request, response);
+//        if (uEntity != null) {
+//            if (super.hasAccess(uEntity, actionKey)) {
         Integer id = HttpUtil.getIntParameter(request, "id");
         MerchantDomainVO domain = domainService.getBean(id);
-        HttpUtil.write(response, JSON.toJSONString(domain), "text/json");
+        json.accumulate("bean", domain);
+
+        json.set(0, "0-3");
+//            }
+//            else {
+//                json.set(2, "2-4");
+//            }
+//        }
+//        else {
+//            json.set(2, "2-6");
+//        }
+//        final long t2 = System.currentTimeMillis();
+//        if (uEntity != null) {
+//            this.adminUserActionLogJob.add(request, actionKey, uEntity, json, t2 - t1);
+//        }
+        HttpUtil.write(response, json.toString(), "text/json");
     }
 
     @ResponseBody
